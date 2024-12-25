@@ -1,0 +1,12 @@
+{
+    "include": [
+        "konsole",
+        "xfsdump"
+    ],
+    "exclude": [
+        "ptyxis",
+        "tailscale",
+        "code",
+        "solaar"
+    ]
+}

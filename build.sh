@@ -2,22 +2,35 @@
 
 set -ouex pipefail
 
+
 RELEASE="$(rpm -E %fedora)"
 
+### Change packages
 
-### Install packages
+# This Aurora base removes a number of default packages, as:
+#
+# - Many of the default packages duplicate functionality already provided in
+#   the base KDE distribution (and don't integrate well into KDE), and so they
+#   are removed to reduce the image size.
+# - The base image is rather opinionated in its package selection, they are
+#   removed here in an effort to keep things small.
 
-# Packages can be installed from any enabled yum repo on the image.
-# RPMfusion repos are available by default in ublue main images
-# List of rpmfusion packages can be found here:
-# https://mirrors.rpmfusion.org/mirrorlist?path=free/fedora/updates/39/x86_64/repoview/index.html&protocol=https&redirect=1
+INCLUDED_RPMS=($(jq -r '.include[]' /tmp/packages.json))
+EXCLUDED_RPMS=($(jq -r '.exclude[]' /tmp/packages.json))
+INSTALLED_EXCLUDED_RPMS=($(rpm -qa --queryformat='%{name} ' ${EXCLUDED_RPMS[@]}))
 
-# this installs a package from fedora repos
-rpm-ostree install screen
+if [[ "${#INSTALLED_EXCLUDED_RPMS[@]}" -gt 0 ]]; then
+    rpm-ostree override remove ${INSTALLED_EXCLUDED_RPMS[@]} \
+        $(printf -- "--install=%s " ${INCLUDED_RPMS[@]})
+else
+    rpm-ostree install ${INCLUDED_RPMS[@]}
+fi
 
-# this would install a package from rpmfusion
-# rpm-ostree install vlc
+# Clean out unused yum repositories
+rm -f /etc/yum.repos.d/{google-chrome,vscode}.repo
 
-#### Example for enabling a System Unit File
-
-systemctl enable podman.socket
+# Remove config files for packages that are not shipped in this image
+rm -f /usr/libexec/aurora-dx-user-vscode
+rm -f /usr/lib/systemd/user/aurora-dx-user-vscode.service
+rm -f /etc/profile.d/vscode-{aurora,bluefin}-profile.sh
+rm -rf /etc/skel/.config/Code
