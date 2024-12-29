@@ -7,6 +7,10 @@
         "ptyxis",
         "tailscale",
         "code",
-        "solaar"
+        "solaar",
+        "skanpage",
+        "incus",
+        "incus-agent",
+        "lxc"
     ]
 }
