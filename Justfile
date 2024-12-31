@@ -5,7 +5,6 @@ repo_name := "borealos"
 images := "([" + repo_name + "]='" + repo_name + "' [" + repo_name + "-nvidia]='" + repo_name + "-nvidia')"
 image_desc := "Custom lightweight build of Aurora Linux targeted at power users"
 export SUDOIF := if `id -u` == "0" { "" } else { "sudo" }
-export SET_X := if `id -u` == "0" { "1" } else { env('SET_X', '') }
 export PODMAN := if path_exists("/usr/bin/podman") == "true" { env("PODMAN", "/usr/bin/podman") } else { if path_exists("/usr/bin/docker") == "true" { env("PODMAN", "/usr/bin/docker") } else { env("PODMAN", "exit 1") } }
 
 [private]
@@ -41,7 +40,7 @@ clean:
 [group('Image')]
 build image=repo_name tag="stable":
     #!/usr/bin/env bash
-    set ${SET_X:+-x} -euo pipefail
+    set -euxo pipefail
 
     # Validate that the user provided a valid image
     declare -A ALL_IMAGES={{ images }}
@@ -80,7 +79,7 @@ build image=repo_name tag="stable":
 [private]
 rechunk image=repo_name $tag="stable-unopt" prevTag="stable":
     #!/usr/bin/env bash
-    set -xeuo pipefail
+    set -euxo pipefail
     ID="$(${PODMAN} images --filter reference=localhost/{{ image }}:{{ tag }} --format "'{{ '{{.ID}}' }}'")"
 
     if [[ -z "$ID" ]]; then
@@ -91,7 +90,6 @@ rechunk image=repo_name $tag="stable-unopt" prevTag="stable":
     # Set metadata for the image
     OUT_NAME="{{ image }}"
     OUT_VERSION="${tag/%-unopt/}"
-    OUT_VERSION_SYMBOLIC="$(printf '%s' "$OUT_VERSION" | sed 's/-[[:digit:]]\+\.[[:digit:]]\+$//')"
     LABELS="
         org.opencontainers.image.title={{ image }}
         org.opencontainers.image.revision=$(git rev-parse HEAD)
@@ -166,25 +164,32 @@ rechunk image=repo_name $tag="stable-unopt" prevTag="stable":
 
     ${SUDOIF} ${PODMAN} volume rm {{ image }}_{{ tag }}_cache_ostree
 
-    # Load the rechunked image back into Podman
-    OUT_IMAGE_REF="oci:${PWD}/{{ image }}"
+[group('Image')]
+load-image image=repo_name:
+    #!/usr/bin/env bash
+    set -euxo pipefail
 
-    # Workaround upper-case letters in path (e.g. ~/Documents/...)
-    if printf '%s' "$OUT_IMAGE_REF" | egrep -o '[A-Z]' >/dev/null; then
-        ln -s "$PWD" "/tmp/${OUT_NAME}_${OUT_VERSION}"
-        OUT_IMAGE_REF="oci:/tmp/${OUT_NAME}_${OUT_VERSION}/${OUT_NAME}"
+    LOAD_IMAGE_REF="oci:${PWD}/{{ image }}"
+
+    # Workaround uppercase letters in path (e.g. ~/Documents/...)
+    if printfs '%s' "$LOAD_IMAGE_REF" | egrep -o '[A-Z]' >/dev/null; then
+        ln -s "$PWD" "/tmp/{{ image }}_work"
+        LOAD_IMAGE_REF="oci:/tmp/{{ image }}_work/{{ image }}"
     fi
 
-    OUT_IMAGE="$(${PODMAN} pull "$OUT_IMAGE_REF")"
-    ${PODMAN} untag "${OUT_IMAGE}"
-    ${PODMAN} tag "${OUT_IMAGE}" "localhost/{{ image }}:$OUT_VERSION"
-    ${PODMAN} tag "${OUT_IMAGE}" "localhost/{{ image }}:$OUT_VERSION_SYMBOLIC"
+    LOAD_IMAGE="$(${PODMAN} pull "$LOAD_IMAGE_REF")"
+    LOAD_IMAGE_VERSION="$(${PODMAN} inspect "$LOAD_IMAGE" | jq -r '.[]["Config"]["Labels"]["org.opencontainers.image.version"]')"
+    LOAD_IMAGE_VERSION_SYMBOLIC="$(printf '%s' "$LOAD_IMAGE_VERSION" | sed 's/-[[:digit:]]\+\.[[:digit:]]\+$//')"
+
+    ${PODMAN} untag "${LOAD_IMAGE}"
+    ${PODMAN} tag "${LOAD_IMAGE}" "localhost/{{ image }}:$LOAD_IMAGE_VERSION"
+    ${PODMAN} tag "${LOAD_IMAGE}" "localhost/{{ image }}:$LOAD_IMAGE_VERSION_SYMBOLIC"
     ${PODMAN} images
-    rm -rf "{{ image }}"
-
-    if [[ "$OUT_IMAGE_REF" == "oci:/tmp/${OUT_NAME}_${OUT_VERSION}/${OUT_NAME}" && -L /tmp/${OUT_NAME}_${OUT_VERSION} ]]; then
-        rm -f /tmp/${OUT_NAME}_${OUT_VERSION}
+    
+    if [[ "$LOAD_IMAGE_REF" == "oci:/tmp/{{ image }}_work/{{ image }}" && -L /tmp/{{ image }}_work ]]; then
+        rm -f /tmp/{{ image }}_work
     fi
+    rm -f "{{ image }}"
 
 # Build ISO
 [group('ISO')]
