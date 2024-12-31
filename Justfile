@@ -189,7 +189,7 @@ load-image image=repo_name:
     if [[ "$LOAD_IMAGE_REF" == "oci:/tmp/{{ image }}_work/{{ image }}" && -L /tmp/{{ image }}_work ]]; then
         rm -f /tmp/{{ image }}_work
     fi
-    rm -f "{{ image }}"
+    rm -rf "{{ image }}/"
 
 # Build ISO
 [group('ISO')]
