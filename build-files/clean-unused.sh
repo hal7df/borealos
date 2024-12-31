@@ -15,3 +15,9 @@ rm -f /usr/libexec/aurora-dx-user-vscode
 rm -f /usr/lib/systemd/user/aurora-dx-user-vscode.service
 rm -f {,/usr}/etc/profile.d/vscode-{aurora,bluefin}-profile.sh
 rm -rf {,/usr}/etc/skel/.config/Code
+
+# Remove kind
+rm -f /usr/bin/kind
+
+# Remove motd tips that are not relevant to this image
+sed -i -e '/Tailscale/d' -e '/kind\.sigs\.k8s\.io/d' /usr/share/ublue-os/motd/tips/10-tips.md
