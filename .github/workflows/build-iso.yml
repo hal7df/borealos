@@ -29,7 +29,6 @@ on:
 
 env:
   IMAGE_REGISTRY: ghcr.io/hal7df
-  IMAGE_NAME: ${{ matrix.image }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}.iso

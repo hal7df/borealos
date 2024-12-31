@@ -16,7 +16,6 @@ concurrency:
 
 env:
   IMAGE_REGISTRY: ghcr.io/hal7df
-  IMAGE_NAME: ${{ matrix.image }}
 
 jobs:
   build-image:
