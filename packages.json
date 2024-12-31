@@ -1,16 +1,36 @@
 {
-    "include": [
-        "konsole",
-        "xfsdump"
-    ],
-    "exclude": [
-        "ptyxis",
-        "tailscale",
-        "code",
-        "solaar",
-        "skanpage",
-        "incus",
-        "incus-agent",
-        "lxc"
-    ]
+    "rpm": {
+        "include": [],
+        "exclude": [
+            "code",
+            "devpod",
+            "docker-buildx-plugin",
+            "docker-ce",
+            "docker-ce-cli",
+            "docker-ce-rootless-extras",
+            "docker-compose-plugin",
+            "incus",
+            "incus-agent",
+            "lxc",
+            "ptyxis",
+            "skanpage",
+            "solaar",
+            "tailscale"
+        ]
+    },
+    "flatpak": {
+        "include": [],
+        "exclude": [
+            "app/com.github.tchx84.Flatseal/x86_64/stable",
+            "app/io.github.flattool.Warehouse/x86_64/stable",
+            "app/io.missioncenter.MissionCenter/x86_64/stable",
+            "app/org.fkoehler.KTailctl/x86_64/stable",
+            "app/org.gnome.World.PikaBackup/x86_64/stable",
+            "app/org.gnome.DejaDup/x86_64/stable",
+            "app/org.kde.haruna/x86_64/stable",
+            "app/org.kde.kclock/x86_64/stable",
+            "app/org.kde.kontact/x86_64/stable",
+            "app/org.kde.kweather/x86_64/stable"
+        ]
+    }
 }

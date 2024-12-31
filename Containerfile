@@ -15,44 +15,28 @@
 # - "base"
 #
 #  "aurora", "bazzite", "bluefin" or "ucore" may also be used but have different suffixes.
-ARG SOURCE_IMAGE="aurora"
-
-## SOURCE_SUFFIX arg should include a hyphen and the appropriate suffix name
-# These examples all work for silverblue/kinoite/sericea/onyx/lazurite/vauxite/base
-# - "-main"
-# - "-nvidia"
-# - "-asus"
-# - "-asus-nvidia"
-# - "-surface"
-# - "-surface-nvidia"
-#
-# aurora, bazzite and bluefin each have unique suffixes. Please check the specific image.
-# ucore has the following possible suffixes
-# - stable
-# - stable-nvidia
-# - stable-zfs
-# - stable-nvidia-zfs
-# - (and the above with testing rather than stable)
-ARG SOURCE_SUFFIX="-dx"
+ARG SOURCE_IMAGE="aurora-dx"
 
 ## SOURCE_TAG arg must be a version built for the specific image: eg, 39, 40, gts, latest
 ARG SOURCE_TAG="stable"
 
-
 ### 2. SOURCE IMAGE
 ## this is a standard Containerfile FROM using the build ARGs above to select the right upstream image
-FROM ghcr.io/ublue-os/${SOURCE_IMAGE}${SOURCE_SUFFIX}:${SOURCE_TAG}
+FROM ghcr.io/ublue-os/${SOURCE_IMAGE}:${SOURCE_TAG}
 
+ARG TARGET_IMAGE="borealos"
+ARG SOURCE_TAG="stable"
 
 ### 3. MODIFICATIONS
 ## make modifications desired in your image and install packages by modifying the build.sh script
 ## the following RUN directive does all the things required to run "build.sh" as recommended.
 
+COPY build-files/ /tmp/build-files/
 COPY packages.json /tmp/packages.json
-COPY build.sh /tmp/build.sh
+COPY cosign.pub /tmp/cosign.pub
 
 RUN mkdir -p /var/lib/alternatives && \
-    /tmp/build.sh && \
+    /tmp/build-files/build.sh && \
     ostree container commit
 ## NOTES:
 # - /var/lib/alternatives is required to prevent failure with some RPM installs
