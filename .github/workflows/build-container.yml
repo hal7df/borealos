@@ -92,6 +92,14 @@ jobs:
           extra-args: |
             --compression-format=zstd
 
+      - name: Login to ghcr.io for signature upload
+        uses: docker/login-action@v3
+        if: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
       - name: Install cosign
         uses: sigstore/cosign-installer@v3.7.0
         if: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
