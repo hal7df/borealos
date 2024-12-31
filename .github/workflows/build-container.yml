@@ -65,7 +65,7 @@ jobs:
         if: ${{ github.ref == 'refs/heads/main' }}
         shell: bash
         run: |
-          tags="$(sudo just list-tags ${{ matrix.image }})"
+          tags="$(just list-tags ${{ matrix.image }})"
           echo "tags=$tags" | tr '[[:space:]]' ' ' >> $GITHUB_OUTPUT
           echo $GITHUB_OUTPUT
 
