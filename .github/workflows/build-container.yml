@@ -49,7 +49,7 @@ jobs:
 
       - name: Lint Justfile
         shell: bash
-        run: just check
+        run: just lint
 
       - name: Build and rechunk container image
         shell: bash

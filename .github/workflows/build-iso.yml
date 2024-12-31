@@ -67,7 +67,7 @@ jobs:
 
       - name: Lint Justfile
         shell: bash
-        run: just check
+        run: just lint
 
       - name: Build ISO
         id: iso

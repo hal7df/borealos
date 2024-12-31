@@ -2,13 +2,11 @@
 
 repo_user := "hal7df"
 repo_name := "borealos"
-images := "([" + repo_name + "]='" + repo_name \
-    + "' [" + repo_name + "-nvidia]='" + repo_name + "-nvidia')"
+images := "([" + repo_name + "]='" + repo_name + "' [" + repo_name + "-nvidia]='" + repo_name + "-nvidia')"
 image_desc := "Custom lightweight build of Aurora Linux targeted at power users"
-
 export SUDOIF := if `id -u` == "0" { "" } else { "sudo" }
 export SET_X := if `id -u` == "0" { "1" } else { env('SET_X', '') }
-export PODMAN := if path_exists("/usr/bin/podman") == "true" { env("PODMAN", "/usr/bin/podman") } else { if path_exists("/usr/bin/docker") == "true" { env("PODMAN", "/usr/bin/docker") } else { env("PODMAN", "exit 1") }}
+export PODMAN := if path_exists("/usr/bin/podman") == "true" { env("PODMAN", "/usr/bin/podman") } else { if path_exists("/usr/bin/docker") == "true" { env("PODMAN", "/usr/bin/docker") } else { env("PODMAN", "exit 1") } }
 
 [private]
 default:
@@ -16,13 +14,13 @@ default:
 
 # Validate Justfile
 [group('Just')]
-check:
+lint:
     #!/usr/bin/env bash
     echo "Checking syntax: Justfile"
     just --unstable --fmt --check -f Justfile
 
 [group('Just')]
-fix:
+lint-fix:
     #!/usr/bin/env bash
     echo "Fixing syntax: Justfile"
     just --unstable --fmt -f Justfile
@@ -44,7 +42,7 @@ clean:
 build image=repo_name tag="stable":
     #!/usr/bin/env bash
     set ${SET_X:+-x} -euo pipefail
-    
+
     # Validate that the user provided a valid image
     declare -A ALL_IMAGES={{ images }}
     TARGET_IMAGE="${ALL_IMAGES[{{ image }}]-}"
@@ -89,7 +87,7 @@ rechunk image=repo_name $tag="stable-unopt" prevTag="stable":
         echo "Image could not be found for rechunking. Run 'just build {{ image }}' to create the unoptimized image."
         exit 1
     fi
-    
+
     # Set metadata for the image
     OUT_NAME="{{ image }}"
     OUT_VERSION="${tag/%-unopt/}"
@@ -301,7 +299,7 @@ build-iso image=repo_name tag="stable" ghcr="0" clean="0":
 
     ${SUDOIF} ${PODMAN} run --rm --privileged --pull=newer --security-opt label=disable "${ISO_BUILD_ARGS[@]}"
     mv build/output/{{ image }}-{{ tag }}.iso-CHECKSUM build/output/{{ image }}-{{ tag }}.iso.sha256
-    
+
     if [[ "${UID}" -gt "0" ]]; then
         ${SUDOIF} chown -R ${UID}:${GROUPS} "${PWD}"
         ${SUDOIF} ${PODMAN} rmi "${IMAGE_FULL}"
