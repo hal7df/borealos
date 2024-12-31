@@ -185,7 +185,7 @@ load-image image=repo_name:
     ${PODMAN} tag "${LOAD_IMAGE}" "localhost/{{ image }}:$LOAD_IMAGE_VERSION"
     ${PODMAN} tag "${LOAD_IMAGE}" "localhost/{{ image }}:$LOAD_IMAGE_VERSION_SYMBOLIC"
     ${PODMAN} images
-    
+
     if [[ "$LOAD_IMAGE_REF" == "oci:/tmp/{{ image }}_work/{{ image }}" && -L /tmp/{{ image }}_work ]]; then
         rm -f /tmp/{{ image }}_work
     fi
