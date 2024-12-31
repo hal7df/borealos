@@ -34,4 +34,4 @@ jobs:
       - build-container
     with:
       images: '["borealos", "borealos-nvidia"]'
-      source_tag: stable
+      tag: stable
