@@ -81,7 +81,7 @@ jobs:
       - name: Upload ISO as job artifact
         id: upload
         uses: actions/upload-artifact@v4
-        if: github.ref == 'main'
+        if: ${{ github.ref == 'main' }}
         with:
           name: ${{ matrix.image }}-${{ inputs.tag }}-iso
           path: build/outputs/${{ matrix.image }}-${{ inputs.tag }}.iso
@@ -92,6 +92,7 @@ jobs:
 
       - name: Validate checksum of uploaded ISO
         shell: bash
+        if: ${{ github.ref == 'main' }}
         run: |
           if [[ "${{ steps.iso.outputs.sha256 }}" != "${{ steps.upload.outputs.artifact-digest }}" ]]; then
             echo "Artifact upload validation failed."

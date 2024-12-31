@@ -72,7 +72,7 @@ jobs:
       - name: Push to ghcr.io
         uses: redhat-actions/push-to-registry@v2
         id: push
-        if: github.ref == "main"
+        if: ${{ github.ref == 'main' }}
         env:
           REGISTRY_USER: ${{ github.actor }}
           REGISTRY_PASSWORD: ${{ github.token }}
@@ -87,10 +87,10 @@ jobs:
 
       - name: Install cosign
         uses: sigstore/cosign-installer@v3.7.0
-        if: github.ref == 'main' && github.event_name != 'pull_request'
+        if: ${{ github.ref == 'main' && github.event_name != 'pull_request' }}
 
       - name: Sign container image
-        if: github.ref == 'main' && github.event_name != 'pull_request'
+        if: ${{ github.ref == 'main' && github.event_name != 'pull_request' }}
         shell: bash
         env:
           TAGS: ${{ steps.push.outputs.digest }}
