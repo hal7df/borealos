@@ -1,0 +1,115 @@
+name: Build borealos container images
+on:
+  workflow_call:
+    inputs:
+      images:
+        description: Image names to build
+        type: string
+        default: '["borealos", "borealos-nvidia"]'
+      source_tag:
+        type: string
+        default: stable
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}-${{ matrix.image }}
+  cancel-in-progress: true
+
+env:
+  IMAGE_REGISTRY: ghcr.io/hal7df
+  IMAGE_NAME: ${{ matrix.image }}
+
+jobs:
+  build-image:
+    name: Build ${{ matrix.image }}:${{ inputs.source_tag }}
+    runs-on: ubuntu-24.04
+    continue-on-error: false
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ${{ fromJson(inputs.images) }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Just
+        shell: bash
+        run: |
+          set -euxo pipefail
+        JUST_VERSION=$(curl -L https://api.github.com/repos/casey/just/releases/latest | jq -r '.tag_name')
+        curl -sSLO https://github.com/casey/just/releases/download/${JUST_VERSION}/just-${JUST_VERSION}-x86_64-unknown-linux-musl.tar.gz
+        tar xzvf just-${JUST_VERSION}-x86_64-unknown-linux-musl.tar.gz -C /tmp just
+        sudo mv /tmp/just /usr/local/bin/just
+        rm -f just-${JUST_VERSION}-x86_64-unknown-linux-musl.tar.gz
+
+      - name: Maximize build space
+        uses: ublue-os/remove-unwanted-software@v7
+
+      - name: Lint Justfile
+        shell: bash
+        run: just check
+
+      - name: Build and rechunk container image
+        shell: bash
+        run: sudo just rechunk ${{ matrix.image }}
+
+      - name: Read image tags
+        id: get_tags
+        shell: bash
+        run: |
+          tags="$(just list-tags ${{ matrix.image }})"
+          echo "tags=$tags" | tr '[[:space:]]' ' ' >> $GITHUB_OUTPUT
+          echo $GITHUB_OUTPUT
+
+      - name: Fix registry case issues
+        id: registry_case
+        uses: ASzc/change-string-case-action@v6
+        with:
+          string: ${{ env.IMAGE_REGISTRY }}
+
+      - name: Push to ghcr.io
+        uses: redhat-actions/push-to-registry@v2
+        id: push
+        if: github.ref == "main"
+        env:
+          REGISTRY_USER: ${{ github.actor }}
+          REGISTRY_PASSWORD: ${{ github.token }}
+        with:
+          image: ${{ matrix.image }}
+          tags: ${{ steps.get_tags.outputs.tags }}
+          registry: ${{ steps.registry_case.outputs.lowercase }}
+          username: ${{ env.REGISTRY_USER }}
+          password: ${{ env.REGISTRY_PASSWORD }}
+          extra-args: |
+            --compression-format=zstd
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3.7.0
+        if: github.ref == 'main' && github.event_name != 'pull_request'
+
+      - name: Sign container image
+        if: github.ref == 'main' && github.event_name != 'pull_request'
+        shell: bash
+        env:
+          TAGS: ${{ steps.push.outputs.digest }}
+          COSIGN_EXPERIMENTAL: false
+          COSIGN_PRIVATE_KEY: ${{ secrets.SIGNING_SECRET }}
+        run: |
+          cosign sign -y --key env://COSIGN_PRIVATE_KEY ${{ steps.registry_case.outputs.lowercase }}/${{ matrix.image }}@${TAGS}
+
+check:
+  name: Check all images built successfully
+  if: ${{ !cancelled() }}
+  runs-on: ubuntu-24.04
+  needs: [build-image]
+  steps:
+    - name: Fail build
+      if: ${{ needs.build-image.result == 'failure' }}
+      shell: bash
+      run: exit 1
+    - name: Exit normally
+      shell: bash
+      run: exit 0

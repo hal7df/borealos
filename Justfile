@@ -310,6 +310,7 @@ build-iso image=repo_name tag="stable" ghcr="0" clean="0":
     fi
 
 # Verify Container with cosign
+[group('Utility')]
 verify-container container="" registry="ghcr.io/ublue-os" $key="":
     #!/bin/bash
     set -euxo pipefail
@@ -332,3 +333,8 @@ verify-container container="" registry="ghcr.io/ublue-os" $key="":
         echo "Verification of {{ registry }}/{{ container }} failed. Please ensure the container's public key is correct."
         exit 1
     fi
+
+[group('Image')]
+list-tags image=repo_name:
+    #!/usr/bin/env bash
+    podman image ls --filter reference='{{ image }}' --format "'{{ '{{.Tag}}' }}'"
