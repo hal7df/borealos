@@ -99,16 +99,16 @@ jobs:
         run: |
           cosign sign -y --key env://COSIGN_PRIVATE_KEY ${{ steps.registry_case.outputs.lowercase }}/${{ matrix.image }}@${TAGS}
 
-check:
-  name: Check all images built successfully
-  if: ${{ !cancelled() }}
-  runs-on: ubuntu-24.04
-  needs: [build-image]
-  steps:
-    - name: Fail build
-      if: ${{ needs.build-image.result == 'failure' }}
-      shell: bash
-      run: exit 1
-    - name: Exit normally
-      shell: bash
-      run: exit 0
+  check:
+    name: Check all images built successfully
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-24.04
+    needs: [build-image]
+    steps:
+      - name: Fail build
+        if: ${{ needs.build-image.result == 'failure' }}
+        shell: bash
+        run: exit 1
+      - name: Exit normally
+        shell: bash
+        run: exit 0
