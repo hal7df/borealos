@@ -83,7 +83,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: ${{ github.ref == 'main' }}
         with:
-          name: ${{ matrix.image }}-${{ inputs.tag }}-iso
+          name: ${{ matrix.image }}-${{ inputs.tag }}.iso
           path: build/outputs/${{ matrix.image }}-${{ inputs.tag }}.iso
           if-no-files-found: warn
           retention-days: 90
@@ -102,3 +102,13 @@ jobs:
           else
             echo "Artifact upload validated."
           fi
+
+      - name: Upload ISO checksum
+        uses: actions/upload-artifact@v4
+        if: ${{ github.ref == 'main' }}
+        with:
+          name: ${{ matrix.image }}-${{ inputs.tag }}.iso.sha256
+          path: build/outputs/${{ matrix.image }}-${{ inputs.tag }}.iso.sha256
+          if-no-files-found: warn
+          retention-days: 90
+          overwrite: true
