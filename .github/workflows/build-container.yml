@@ -64,6 +64,21 @@ jobs:
           echo "tags=$tags" | tr '[[:space:]]' ' ' >> $GITHUB_OUTPUT
           echo $GITHUB_OUTPUT
 
+      - name: Copy image to runner user store
+        shell: bash
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: |
+          set -euxo pipefail
+          TAG="$(echo "${{ steps.get_tags.outputs.tags }}" | awk '{print $1}')"
+          sudo podman save localhost/${{ matrix.image }}:$TAG | podman load
+          ALL_TAGS=(${{ steps.get_tags.outputs.tags }})
+          for alt_tag in "$ALL_TAGS[@]"; do
+            if [[ "$alt_tag" == "$TAG" ]]; then
+              continue
+            fi
+            podman tag "localhost/${{ matrix.image }}:$TAG" "localhost/${{ matrix.image }}:$alt_tag"
+          done
+
       - name: Fix registry case issues
         id: registry_case
         if: ${{ github.ref == 'refs/heads/main' }}
