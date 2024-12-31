@@ -57,14 +57,16 @@ jobs:
 
       - name: Read image tags
         id: get_tags
+        if: ${{ github.ref == 'refs/heads/main' }}
         shell: bash
         run: |
-          tags="$(just list-tags ${{ matrix.image }})"
+          tags="$(sudo just list-tags ${{ matrix.image }})"
           echo "tags=$tags" | tr '[[:space:]]' ' ' >> $GITHUB_OUTPUT
           echo $GITHUB_OUTPUT
 
       - name: Fix registry case issues
         id: registry_case
+        if: ${{ github.ref == 'refs/heads/main' }}
         uses: ASzc/change-string-case-action@v6
         with:
           string: ${{ env.IMAGE_REGISTRY }}

@@ -335,4 +335,4 @@ verify-container container="" registry="ghcr.io/ublue-os" $key="":
 [group('Image')]
 list-tags image=repo_name:
     #!/usr/bin/env bash
-    podman image ls --filter reference='{{ image }}' --format "'{{ '{{.Tag}}' }}'"
+    podman image ls --filter reference='{{ image }}' --format "{{ '{{.Tag}}' }}"
