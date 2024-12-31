@@ -44,12 +44,12 @@ jobs:
           sudo mv /tmp/just /usr/local/bin/just
           rm -f just-${JUST_VERSION}-x86_64-unknown-linux-musl.tar.gz
 
-      - name: Maximize build space
-        uses: ublue-os/remove-unwanted-software@v7
-
       - name: Lint Justfile
         shell: bash
         run: just lint
+
+      - name: Maximize build space
+        uses: ublue-os/remove-unwanted-software@v7
 
       - name: Build and rechunk container image
         shell: bash
