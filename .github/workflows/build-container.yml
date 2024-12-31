@@ -53,7 +53,7 @@ jobs:
 
       - name: Build and rechunk container image
         shell: bash
-        run: sudo just rechunk ${{ matrix.image }}
+        run: sudo just build ${{ matrix.image }}
 
       - name: Read image tags
         id: get_tags
