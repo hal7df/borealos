@@ -19,13 +19,13 @@ default:
 check:
     #!/usr/bin/env bash
     echo "Checking syntax: Justfile"
-    just --fmt --check -f Justfile
+    just --unstable --fmt --check -f Justfile
 
 [group('Just')]
 fix:
     #!/usr/bin/env bash
     echo "Fixing syntax: Justfile"
-    just --fmt -f Justfile
+    just --unstable --fmt -f Justfile
 
 [group('Utility')]
 clean:
