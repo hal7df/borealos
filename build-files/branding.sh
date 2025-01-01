@@ -7,7 +7,7 @@ if [[ "$TARGET_IMAGE" =~ nvidia ]]; then
     IMAGE_REF="$IMAGE_REF-nvidia"
 fi
 
-cat >/usr/share/ublue-os/iamge-info.json <<EOF
+cat >/usr/share/ublue-os/image-info.json <<EOF
 {
     "image-name": "borealos",
     "image-flavor": "$IMAGE_FLAVOR",
