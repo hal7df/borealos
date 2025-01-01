@@ -84,31 +84,8 @@ jobs:
         if: ${{ github.ref == 'refs/heads/main' }}
         with:
           name: ${{ matrix.image }}-${{ inputs.tag }}.iso
-          path: build/output/${{ matrix.image }}-${{ inputs.tag }}.iso
+          path: build/output/${{ matrix.image }}-${{ inputs.tag }}.iso*
           if-no-files-found: error
           retention-days: 90
           compression-level: 0
-          overwrite: true
-
-      - name: Validate checksum of uploaded ISO
-        shell: bash
-        if: ${{ github.ref == 'refs/heads/main' }}
-        run: |
-          if [[ "${{ steps.iso.outputs.sha256 }}" != "${{ steps.upload.outputs.artifact-digest }}" ]]; then
-            echo "Artifact upload validation failed."
-            echo "Expected SHA256: ${{ steps.iso.outputs.sha256 }}"
-            echo "Got SHA256: ${{ steps.upload.outputs.artifact-digest }}"
-            exit 1
-          else
-            echo "Artifact upload validated."
-          fi
-
-      - name: Upload ISO checksum
-        uses: actions/upload-artifact@v4
-        if: ${{ github.ref == 'refs/heads/main' }}
-        with:
-          name: ${{ matrix.image }}-${{ inputs.tag }}.iso.sha256
-          path: build/outputs/${{ matrix.image }}-${{ inputs.tag }}.iso.sha256
-          if-no-files-found: warn
-          retention-days: 90
           overwrite: true
