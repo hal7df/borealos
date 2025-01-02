@@ -7,7 +7,7 @@ mkdir -p {,/usr}/etc/containers/registries.d/
 mkdir -p {,/usr}/etc/pki/containers
 
 if [[ ! -f /usr/etc/containers/policy.json ]]; then
-    echo '{"transports":{"docker":{}}}' > /usr/etc/containers/policy.json
+    echo '{"default":[{"type":"insecureAcceptAnything"}],"transports":{"docker":{}}}' > /usr/etc/containers/policy.json
 fi
 
 cat > /etc/containers/policy.json <<< "$(jq '.transports.docker |=. + {
