@@ -16,11 +16,34 @@ if [[ ! -f /usr/etc/containers/policy.json ]]; then
     "docker": {
       "docker.io": [{
         "type": "insecureAcceptAnything"
+      }],
+      "registry.fedoraproject.org": [{
+        "type": "insecureAcceptAnything"
+      }]
+    },
+    "docker-archive": {
+      "": [{
+        "type": "insecureAcceptAnything"
       }]
     },
     "docker-daemon": {
       "": [{
-        "type': "insecureAcceptAnything"
+        "type": "insecureAcceptAnything"
+      }]
+    },
+    "dir": {
+      "": [{
+        "type": "insecureAcceptAnything"
+      }]
+    },
+    "oci": {
+      "": [{
+        "type": "insecureAcceptAnything"
+      }]
+    },
+    "oci-archive": {
+      "": [{
+        "type": "insecureAcceptAnything"
       }]
     }
   }]
