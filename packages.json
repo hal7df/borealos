@@ -1,6 +1,6 @@
 {
     "rpm": {
-        "include": [],
+        "include": [ "v4l-utils" ],
         "exclude": [
             "code",
             "devpod",
