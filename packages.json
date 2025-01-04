@@ -13,7 +13,6 @@
             "incus-agent",
             "lxc",
             "ptyxis",
-            "skanpage",
             "solaar",
             "tailscale"
         ]
@@ -24,6 +23,7 @@
             "app/com.github.tchx84.Flatseal/x86_64/stable",
             "app/io.github.flattool.Warehouse/x86_64/stable",
             "app/io.missioncenter.MissionCenter/x86_64/stable",
+            "app/io.podman_desktop.PodmanDesktop/x86_64/stable",
             "app/org.fkoehler.KTailctl/x86_64/stable",
             "app/org.gnome.World.PikaBackup/x86_64/stable",
             "app/org.gnome.DejaDup/x86_64/stable",
