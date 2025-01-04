@@ -114,7 +114,7 @@ jobs:
         if: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
         shell: bash
         env:
-          TAGS: ${{ steps.push.outputs.digest }}
+          TAGS: ${{ steps.push.outputs.outputs && fromJSON(steps.push.outputs.outputs).digest }}
           COSIGN_EXPERIMENTAL: false
           COSIGN_PRIVATE_KEY: ${{ secrets.SIGNING_SECRET }}
         run: |
