@@ -26,6 +26,9 @@ else
     rpm-ostree install ${INCLUDED_RPMS[@]}
 fi
 
+# Add custom ujust commands
+cat /tmp/just/*.just >> /usr/share/ublue-os/just/60-custom.just
+
 # Clean out unused yum repositories
 /tmp/build-files/clean-unused.sh
 

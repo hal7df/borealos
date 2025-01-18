@@ -32,6 +32,7 @@ ARG SOURCE_TAG="stable"
 ## the following RUN directive does all the things required to run "build.sh" as recommended.
 
 COPY build-files/ /tmp/build-files/
+COPY just/ /tmp/just/
 COPY packages.json /tmp/packages.json
 COPY cosign.pub /tmp/cosign.pub
 
