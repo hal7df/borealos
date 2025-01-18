@@ -49,7 +49,7 @@ jobs:
         run: just lint
 
       - name: Maximize build space
-        uses: ublue-os/remove-unwanted-software@v7
+        uses: ublue-os/remove-unwanted-software@v8
 
       - name: Build and rechunk container image
         shell: bash
@@ -79,7 +79,7 @@ jobs:
       # Retry the container upload up to 3 times, as it is prone to fail on
       # occasion
       - name: Push to ghcr.io
-        uses: Wandalen/wretry.action@v3.7.3
+        uses: Wandalen/wretry.action@v3.8.0
         id: push
         if: ${{ github.ref == 'refs/heads/main' }}
         env:
