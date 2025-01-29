@@ -5,7 +5,7 @@ repo_name := "borealos"
 images := "([" + repo_name + "]='" + repo_name + "' [" + repo_name + "-nvidia]='" + repo_name + "-nvidia')"
 image_desc := "Custom lightweight build of Aurora Linux targeted at power users"
 export SUDOIF := if `id -u` == "0" { "" } else { "sudo" }
-export PODMAN := if path_exists("/usr/bin/podman") == "true" { env("PODMAN", "/usr/bin/podman") } else { if path_exists("/usr/bin/docker") == "true" { env("PODMAN", "/usr/bin/docker") } else { env("PODMAN", "exit 1") } }
+export PODMAN := if path_exists("/usr/bin/podman") == "true" { env("PODMAN", "/usr/bin/podman") } else if path_exists("/usr/bin/docker") == "true" { env("PODMAN", "/usr/bin/docker") } else { env("PODMAN", "exit 1") }
 
 [private]
 default:
