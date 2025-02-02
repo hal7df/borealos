@@ -12,7 +12,7 @@ if [[ ! -f /usr/etc/containers/policy.json ]]; then
   "default": [{
     "type": "reject"
   }],
-  "transports": [{
+  "transports": {
     "docker": {
       "docker.io": [{
         "type": "insecureAcceptAnything"
@@ -46,7 +46,7 @@ if [[ ! -f /usr/etc/containers/policy.json ]]; then
         "type": "insecureAcceptAnything"
       }]
     }
-  }]
+  }
 }
 EOF
 fi
