@@ -49,7 +49,7 @@ jobs:
         run: just lint
 
       - name: Maximize build space
-        uses: ublue-os/remove-unwanted-software@v8
+        uses: ublue-os/remove-unwanted-software@v9
 
       - name: Build and rechunk container image
         shell: bash
