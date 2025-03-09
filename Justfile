@@ -172,7 +172,7 @@ load-image image=repo_name:
     LOAD_IMAGE_REF="oci:${PWD}/{{ image }}"
 
     # Workaround uppercase letters in path (e.g. ~/Documents/...)
-    if printfs '%s' "$LOAD_IMAGE_REF" | egrep -o '[A-Z]' >/dev/null; then
+    if printf '%s' "$LOAD_IMAGE_REF" | egrep -o '[A-Z]' >/dev/null; then
         ln -s "$PWD" "/tmp/{{ image }}_work"
         LOAD_IMAGE_REF="oci:/tmp/{{ image }}_work/{{ image }}"
     fi
