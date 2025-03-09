@@ -83,6 +83,9 @@ flatpak, brew, or manually installing them to ~/.local/bin/.
   minimal base install.
 - InputLeap: removed for a more minimal base install
 - Font managing software: removed for a more minimal base install
+- OpenRazer: removed for a more minimal base install
+- monaspace fonts: space concerns
+- RamaLama: LLM development is not an objective for this image
 
 ## Credits
 

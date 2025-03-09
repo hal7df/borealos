@@ -15,7 +15,10 @@
             "incus",
             "incus-agent",
             "lxc",
+            "monaspace-nerd-fonts",
+            "openrazer-daemon",
             "ptyxis",
+            "python3-ramalama",
             "solaar",
             "tailscale"
         ]
