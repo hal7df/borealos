@@ -2,7 +2,8 @@
     "rpm": {
         "include": [
             "v4l-utils",
-            "solaar-udev"
+            "solaar-udev",
+            "cronie"
         ],
         "exclude": [
             "code",

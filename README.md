@@ -49,6 +49,7 @@ a small number of useful packages have been added.
 - `v4l-utils`: Commandline utilities for managing webcams and video capture
   devices.
 - `solaar-udev`: udev rules to make the Solaar Flatpak work
+- `cronie`: cron implementation
 
 ### Removed
 Note that, unlike standard ublue-os images, BorealOS (by design) does not
