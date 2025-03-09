@@ -19,6 +19,13 @@ if [[ ! -f /usr/etc/containers/policy.json ]]; then
       }],
       "registry.fedoraproject.org": [{
         "type": "insecureAcceptAnything"
+      }],
+      "ghcr.io/ublue-os": [{
+        "type": "sigstoreSigned",
+        "keyPath": "/etc/pki/containers/ublue-os.pub",
+        "signedIdentity": {
+          "type": "matchRepository"
+        }
       }]
     },
     "docker-archive": {

@@ -212,6 +212,7 @@ build-iso image=repo_name tag="stable" ghcr="0" clean="0":
     mkdir -p build/{flatpak-refs,output,bin}
     FLATPAK_REFS_DIR="build/flatpak-refs"
     FLATPAK_REFS_DIR_ABS="$(realpath ${FLATPAK_REFS_DIR})"
+    cp flatpaks.txt "${FLATPAK_REFS_DIR_ABS}/flatpaks.txt"
 
     # Build from GHCR or localhost
     if [[ "{{ ghcr }}" == "1" ]]; then
@@ -243,14 +244,6 @@ build-iso image=repo_name tag="stable" ghcr="0" clean="0":
             ${SUDOIF} ${PODMAN} pull "$IMAGE_FULL"
         fi
     fi
-
-    # Build preinstalled flatpak list
-    curl -Lo "${FLATPAK_REFS_DIR_ABS}/flatpaks-src.txt" "https://raw.githubusercontent.com/ublue-os/aurora/refs/heads/main/aurora_flatpaks/flatpaks"
-    curl -L "https://raw.githubusercontent.com/ublue-os/aurora/refs/heads/main/dx_flatpaks/flatpaks" >> "${FLATPAK_REFS_DIR_ABS}/flatpaks-src.txt"
-
-    jq -r .flatpak.include[] packages.json >> "${FLATPAK_REFS_DIR_ABS}/flatpaks-src.txt"
-    jq -r .flatpak.exclude[] packages.json | grep -vf - "${FLATPAK_REFS_DIR_ABS}/flatpaks-src.txt" > "${FLATPAK_REFS_DIR_ABS}/flatpaks.txt"
-    rm -f "${FLATPAK_REFS_DIR_ABS}/flatpaks-src.txt"
 
     # Resolve flatpak dependencies
     cat > "build/bin/install-flatpaks.sh" <<EOF

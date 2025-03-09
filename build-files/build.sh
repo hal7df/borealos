@@ -26,11 +26,11 @@ else
     rpm-ostree install ${INCLUDED_RPMS[@]}
 fi
 
-# Add custom ujust commands
-cat /tmp/just/*.just >> /usr/share/ublue-os/just/60-custom.just
-
 # Clean out unused yum repositories
 /tmp/build-files/clean-unused.sh
+
+# Setup custom scripts, modify upstream scripts
+/tmp/build-files/system-files.sh
 
 # Configure image signing
 /tmp/build-files/signing.sh

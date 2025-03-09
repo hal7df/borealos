@@ -34,6 +34,7 @@ ARG SOURCE_TAG="stable"
 COPY build-files/ /tmp/build-files/
 COPY just/ /tmp/just/
 COPY packages.json /tmp/packages.json
+COPY flatpaks.txt /tmp/flatpaks.txt
 COPY cosign.pub /tmp/cosign.pub
 
 RUN mkdir -p /var/lib/alternatives && \
