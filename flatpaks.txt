@@ -1,7 +1,6 @@
 app/org.mozilla.firefox/x86_64/stable
 app/org.kde.kcalc/x86_64/stable
 app/org.kde.gwenview/x86_64/stable
-app/org.kde.kontact/x86_64/stable
 app/org.kde.okular/x86_64/stable
 app/io.github.dvlv.boxbuddyrs/x86_64/stable
 app/org.fedoraproject.MediaWriter/x86_64/stable
