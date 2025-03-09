@@ -45,6 +45,11 @@ if [[ ! -f /usr/etc/containers/policy.json ]]; then
       "": [{
         "type": "insecureAcceptAnything"
       }]
+    },
+    "containers-storage": {
+      "": [{
+        "type": "insecureAcceptAnything"
+      }]
     }
   }
 }
