@@ -48,8 +48,14 @@ a small number of useful packages have been added.
 ### Added
 - `v4l-utils`: Commandline utilities for managing webcams and video capture
   devices.
+- `solaar-udev`: udev rules to make the Solaar Flatpak work
 
 ### Removed
+Note that, unlike standard ublue-os images, BorealOS (by design) does not
+automatically modify your system flatpak installation after the initial OS
+install. If you would like to install BorealOS' standard flatpaks, run
+`ujust install-system-flatpaks` from a terminal.
+
 Most of these packages can be added after installing or rebasing to BorealOS via
 flatpak, brew, or manually installing them to ~/.local/bin/.
 
@@ -75,6 +81,8 @@ flatpak, brew, or manually installing them to ~/.local/bin/.
 - Warehouse: Most of Warehouse's functions are provided via Discover.
 - Some KDE apps (Haruna, KClock, Kontact, KWeather): removed for a more
   minimal base install.
+- InputLeap: removed for a more minimal base install
+- Font managing software: removed for a more minimal base install
 
 ## Credits
 
