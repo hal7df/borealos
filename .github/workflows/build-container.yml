@@ -49,7 +49,7 @@ jobs:
         run: just lint
 
       - name: Maximize build space
-        uses: ublue-os/remove-unwanted-software@v8
+        uses: ublue-os/remove-unwanted-software@v9
 
       - name: Build and rechunk container image
         shell: bash
@@ -107,7 +107,7 @@ jobs:
           password: ${{ github.token }}
 
       - name: Install cosign
-        uses: sigstore/cosign-installer@v3.7.0
+        uses: sigstore/cosign-installer@v3.8.1
         if: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
 
       - name: Sign container image
