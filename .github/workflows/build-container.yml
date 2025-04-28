@@ -107,7 +107,7 @@ jobs:
           password: ${{ github.token }}
 
       - name: Install cosign
-        uses: sigstore/cosign-installer@v3.8.1
+        uses: sigstore/cosign-installer@v3.8.2
         if: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
 
       - name: Sign container image
