@@ -5,7 +5,7 @@ on:
       images:
         description: Image names to build
         type: string
-        default: '["borealos", "borealos-nvidia"]'
+        default: '["borealos", "borealos-nvidia", "borealos-nvidia-open"]'
       source_tag:
         type: string
         default: stable
