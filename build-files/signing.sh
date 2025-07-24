@@ -77,6 +77,13 @@ cat > /etc/containers/policy.json <<< "$(jq '.transports.docker |=. + {
         "signedIdentity": {
             "type": "matchRepository"
         }
+    },
+    "ghcr.io/hal7df/borealos-nvidia-open": [{
+        "type": "sigstoreSigned",
+        "keyPath": "/etc/pki/containers/borealos.pub",
+        "signedIdentity": {
+            "type": "matchRepository"
+        }
     }
 ]}' </usr/etc/containers/policy.json)"
 
@@ -86,6 +93,8 @@ docker:
     ghcr.io/hal7df/borealos:
         use-sigstore-attachments: true
     ghcr.io/hal7df/borealos-nvidia:
+        use-sigstore-attachments: true
+    ghcr.io/hal7df/borealos-nvidia-open:
         use-sigstore-attachments: true
 EOF
 
