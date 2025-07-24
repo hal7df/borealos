@@ -8,8 +8,11 @@ on:
         options:
           - '["borealos"]'
           - '["borealos-nvidia"]'
+          - '["borealos-nvidia-open"]'
           - '["borealos", "borealos-nvidia"]'
-        default: '["borealos", "borealos-nvidia"]'
+          - '["borealos-nvidia", "borealos-nvidia-open"]'
+          - '["borealos", "borealos-nvidia", "borealos-nvidia-open"]'
+        default: '["borealos", "borealos-nvidia", "borealos-nvidia-open"]'
       tag:
         description: Image tag to build an installer for
         type: choice
@@ -21,7 +24,7 @@ on:
       images:
         description: image descriptors of the installers to build
         type: string
-        default: '["borealos", "borealos-nvidia"]'
+        default: '["borealos", "borealos-nvidia", "borealos-nvidia-open"]'
       tag:
         description: Image tag to build an installer for
         type: string

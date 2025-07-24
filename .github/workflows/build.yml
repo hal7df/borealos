@@ -24,7 +24,7 @@ jobs:
     uses: ./.github/workflows/build-container.yml
     secrets: inherit
     with:
-      images: '["borealos", "borealos-nvidia"]'
+      images: '["borealos", "borealos-nvidia", "borealos-nvidia-open"]'
       source_tag: stable
 
   build-iso:
@@ -33,5 +33,5 @@ jobs:
     needs:
       - build-container
     with:
-      images: '["borealos", "borealos-nvidia"]'
+      images: '["borealos", "borealos-nvidia", "borealos-nvidia-open"]'
       tag: stable
