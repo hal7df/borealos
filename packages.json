@@ -6,6 +6,7 @@
             "cronie"
         ],
         "exclude": [
+            "bazaar",
             "code",
             "devpod",
             "docker-buildx-plugin",

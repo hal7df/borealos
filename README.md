@@ -82,6 +82,7 @@ flatpak, brew, or manually installing them to ~/.local/bin/.
 - PikaBackup and DejaDup: two GNOME-based backup tools; I currently use borg
   (which remains in the image).
 - Warehouse: Most of Warehouse's functions are provided via Discover.
+- Bazaar: Redundant with Discover
 - Some KDE apps (Haruna, KClock, Kontact, KWeather): removed for a more
   minimal base install.
 - InputLeap: removed for a more minimal base install
