@@ -6,6 +6,7 @@
             "cronie"
         ],
         "exclude": [
+            "bazaar",
             "code",
             "devpod",
             "docker-buildx-plugin",
@@ -15,6 +16,7 @@
             "docker-compose-plugin",
             "incus",
             "incus-agent",
+            "krunner-bazaar",
             "lxc",
             "monaspace-nerd-fonts",
             "openrazer-daemon",
