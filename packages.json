@@ -3,7 +3,8 @@
         "include": [
             "v4l-utils",
             "solaar-udev",
-            "cronie"
+            "cronie",
+            "plasma-browser-integration"
         ],
         "exclude": [
             "code",
