@@ -83,7 +83,7 @@ jobs:
 
       - name: Upload ISO as job artifact
         id: upload
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: ${{ github.ref == 'refs/heads/main' }}
         with:
           name: ${{ matrix.image }}-${{ inputs.tag }}.iso
