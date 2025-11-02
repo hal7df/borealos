@@ -119,7 +119,7 @@ jobs:
           COSIGN_PRIVATE_KEY: ${{ secrets.SIGNING_SECRET }}
         run: |
           cosign sign -y --key env://COSIGN_PRIVATE_KEY --new-bundle-format=false \
-            ${{ steps.registry_case.outputs.lowercase }}/${{ matrix.image }}@${TAGS}
+          --use-signing-config=false ${{ steps.registry_case.outputs.lowercase }}/${{ matrix.image }}@${TAGS}
 
   check:
     name: Check all images built successfully
