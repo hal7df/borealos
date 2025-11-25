@@ -94,6 +94,7 @@ flatpak, brew, or manually installing them to ~/.local/bin/.
 - OpenRazer: removed for a more minimal base install
 - monaspace fonts: space concerns
 - RamaLama: LLM development is not an objective for this image
+- Sunshine: This build is not oriented towards gaming
 
 ## Credits
 
