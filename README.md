@@ -78,6 +78,9 @@ flatpak, brew, or manually installing them to ~/.local/bin/.
 - DevPod: space concerns
 - Solaar: The udev rules have been left intact, so this can be reinstalled via
   Flatpak if needed.
+- Akonadi: This is only needed by the KDE PIM suite, which is not included in
+  the base image. Removing this also removes MariaDB from the image, saving on
+  space.
 - Thunderbird: space concerns
 - Podman Desktop: space concerns
 - Tailscale/KTailctl: I currently have no use for tailscale.
