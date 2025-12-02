@@ -22,8 +22,6 @@
             "mariadb",
             "mariadb-backup",
             "mariadb-common",
-            "mariadb-connector-c",
-            "mariadb-connector-c-config",
             "mariadb-cracklib-password-check",
             "mariadb-errmsg",
             "mariadb-gssapi-server",
