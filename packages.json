@@ -7,6 +7,8 @@
             "plasma-browser-integration"
         ],
         "exclude": [
+            "akonadi-server",
+            "akonadi-server-mysql",
             "code",
             "devpod",
             "docker-buildx-plugin",
@@ -17,6 +19,10 @@
             "incus",
             "incus-agent",
             "lxc",
+            "mariadb",
+            "mariadb-common",
+            "mariadb-errmsg",
+            "mariadb-server",
             "monaspace-nerd-fonts",
             "openrazer-daemon",
             "ptyxis",
