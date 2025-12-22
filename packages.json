@@ -4,7 +4,8 @@
             "v4l-utils",
             "solaar-udev",
             "cronie",
-            "plasma-browser-integration"
+            "plasma-browser-integration",
+            "plocate"
         ],
         "exclude": [
             "code",
