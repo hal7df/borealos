@@ -77,15 +77,15 @@ cat > /etc/containers/policy.json <<< "$(jq '.transports.docker |=. + {
         "signedIdentity": {
             "type": "matchRepository"
         }
-    },
+    }],
     "ghcr.io/hal7df/borealos-nvidia-open": [{
         "type": "sigstoreSigned",
         "keyPath": "/etc/pki/containers/borealos.pub",
         "signedIdentity": {
             "type": "matchRepository"
         }
-    }
-]}' </usr/etc/containers/policy.json)"
+    }]
+}' </usr/etc/containers/policy.json)"
 
 cp /tmp/cosign.pub /etc/pki/containers/borealos.pub
 tee /etc/containers/registries.d/borealos.yaml <<EOF
