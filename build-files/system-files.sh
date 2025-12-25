@@ -3,7 +3,7 @@ cat /tmp/just/*.just >> /usr/share/ublue-os/just/60-custom.just
 
 # Disable unattended installation of flatpaks on user sign in
 SYS_FLATPAK_AUTOINSTALL_MSG="# Disabled to avoid changing the system software install without user consent. The below command can be run manually if desired."
-sed -i "s/^\\(ujust install-system-flatpaks\\)/$SYS_FLATPAK_AUTOINSTALL_MSG\n#\\1"\
+sed -i "s/^\\(ujust install-system-flatpaks\\)/$SYS_FLATPAK_AUTOINSTALL_MSG\n#\\1/"\
     /usr/libexec/ublue-flatpak-manager
 
 # Modify flatpak management to use the borealos flatpak list
