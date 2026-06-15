@@ -8,6 +8,8 @@ image_desc := "Custom lightweight build of Aurora Linux targeted at power users"
 artifact_dir := "./out"
 selinux := env("BUILD_SELINUX", "true")
 bib_image := env("BIB_IMAGE", "quay.io/centos-bootc/bootc-image-builder:latest")
+chunkah_digest := "sha256:ff8b8b466a942ec6000445d4001fc661e2fc5a952ad9ee29b4de9ab09d1d1708"
+chunkah := "quay.io/coreos/chunkah@" + chunkah_digest
 
 bootc_mount_options := if selinux == "true" { "-v /var/lib/containers:/var/lib/containers:Z -v /etc/containers:/etc/containers:Z -v /sys/fs/selinux:/sys/fs/selinux --security-opt label=type:unconfined_t" } else { "-v /var/lib/containers:/var/lib/containers -v /etc/containers:/etc/containers" }
 
@@ -82,6 +84,7 @@ build image=repo_name $SOURCE_TAG="stable" $DEST_TAG="stable":
     BUILD_ARGS+=("--file" "Containerfile")
     BUILD_ARGS+=("--label" "org.opencontainers.image.title={{ image }}")
     BUILD_ARGS+=("--label" "org.opencontainers.image.version=${IMAGE_VERSION}")
+    BUILD_ARGS+=("--label" "org.opencontainers.image.revision=$(git rev-parse HEAD))")
     BUILD_ARGS+=("--label" "org.opencontainers.image.description={{ image_desc }}")
     BUILD_ARGS+=("--label" "ostree.linux=$(jq -r '.Labels["ostree.linux"]' < /tmp/inspect-{{ image }}.json)")
     BUILD_ARGS+=("--build-arg" "SOURCE_IMAGE=$SOURCE_IMAGE")
@@ -114,81 +117,24 @@ rechunk image=repo_name $tag="stable-unopt" prevTag="stable":
     fi
 
     # Set metadata for the image
-    OUT_NAME="{{ image }}"
-    OUT_VERSION="${tag/%-unopt/}"
-    LABELS="
-        org.opencontainers.image.title={{ image }}
-        org.opencontainers.image.revision=$(git rev-parse HEAD)
-        org.opencontainers.image.version=$OUT_VERSION
-        org.opencontainers.image.description={{ image_desc }}
-        ostree.linux=$(${PODMAN} inspect localhost/{{ image }}:{{ tag }} | jq -r '.[]["Config"]["Labels"]["ostree.linux"]')"
-
-    if [[ "${UID}" -gt "0" && ! ${PODMAN} =~ docker ]]; then
-        ${PODMAN} save localhost/{{ image }}:{{ tag }} | ${SUDOIF} ${PODMAN} load
-    fi
-
-    # Mount the image in an accessible container filesystem
-    CREF="$(${SUDOIF} ${PODMAN} create localhost/{{ image }}:{{ tag }} bash)"
-    MOUNT="$(${SUDOIF} ${PODMAN} mount $CREF)"
-    FEDORA_VERSION="$(${SUDOIF} ${PODMAN} inspect $CREF | jq -r '.[]["Config"]["Labels"]["ostree.linux"]' | grep -oP 'fc\K[0-9]+')"
-
-    # Prepare the image for rechunking
-    ${SUDOIF} ${PODMAN} run --rm \
-        --security-opt label=disable \
-        --volume "$MOUNT:/var/tree" \
-        --env TREE=/var/tree \
-        --user 0:0 \
-        ghcr.io/hhd-dev/rechunk:latest \
-        /sources/rechunk/1_prune.sh
-    ${SUDOIF} ${PODMAN} run --rm \
-        --security-opt label=disable \
-        --volume "$MOUNT:/var/tree" \
-        --volume "{{ image }}_{{ tag }}_cache_ostree:/var/ostree" \
-        --env TREE=/var/tree \
-        --env REPO=/var/ostree/repo \
-        --env RESET_TIMESTAMP=1 \
-        --user 0:0 \
-        ghcr.io/hhd-dev/rechunk:latest \
-        /sources/rechunk/2_create.sh
-
-    # Unmount the temporary container, and remove both the container and the
-    # unoptimized images
-    ${SUDOIF} ${PODMAN} unmount "$CREF"
-    ${SUDOIF} ${PODMAN} rm "$CREF"
-    if [[ "${UID}" -gt "0" ]]; then
-        ${SUDOIF} ${PODMAN} rmi localhost/{{ image }}:{{ tag }}
-    fi
-    ${PODMAN} rmi localhost/{{ image }}:{{ tag }}
+    OUT_TAG="${tag/%-unopt/}"
+    CHUNKAH_CONFIG_STR=$(${PODMAN} inspect "{{ image }}:${tag}")
+    export CHUNKAH_CONFIG_STR
 
     # Rechunk the image
-    ${SUDOIF} ${PODMAN} run --rm \
-        --pull=newer \
-        --security-opt label=disable \
-        --volume "$PWD:/workspace" \
-        --volume "$PWD:/var/git" \
-        --volume "{{ image }}_{{ tag }}_cache_ostree:/var/ostree" \
-        --env REPO=/var/ostree/repo \
-        --env PREV_REF=ghcr.io/{{ repo_user }}/{{ image }}:{{ prevTag }} \
-        --env LABELS="$LABELS" \
-        --env OUT_NAME="$OUT_NAME" \
-        --env VERSION="$OUT_VERSION" \
-        --env OUT_REF="oci:$OUT_NAME" \
-        --env GIT_DIR="/var/git" \
-        --user 0:0 \
-        ghcr.io/hhd-dev/rechunk:latest \
-        /sources/rechunk/3_chunk.sh
+    ${PODMAN} run --rm --mount=type=image,src="{{ image }}:${tag}",target=/chunkah \
+        -e CHUNKAH_CONFIG_STR \
+        "{{ chunkah }}" build \
+        --verbose \
+        --compressed \
+        --max-layers 128 \
+        --prune /sysroot/ \
+        --label ostree.commit- \
+        --label ostree.final-diffid- \
+        --tag "{{ image }}:$OUT_TAG" | ${PODMAN} load
 
-    # Clean up rechunk output
-    ${SUDOIF} find "$OUT_NAME" -type d -exec chmod 0755 {} \; || true
-    ${SUDOIF} find "$OUT_NAME"* -type f -exec chmod 0644 {} \; || true
-
-    if [[ "${UID}" -gt "0" ]]; then
-        ${SUDOIF} chown -R ${UID}:${GROUPS} "${PWD}"
-    elif [[ "${UID}" == "0" && -n "${SUDO_USER:-}" ]]; then
-        ${SUDOIF} chown -R ${SUDO_UID}:${SUDO_GID} "${PWD}"
-    fi
-
-    ${SUDOIF} ${PODMAN} volume rm {{ image }}_{{ tag }}_cache_ostree
+    # Remove the unoptimized image
+    ${PODMAN} rmi "{{ image }}:${tag}"
 
 [group('Image')]
 load-image image=repo_name:
