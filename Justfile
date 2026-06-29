@@ -4,6 +4,13 @@ repo_user := "hal7df"
 repo_name := "borealos"
 images := "([" + repo_name + "]='" + repo_name + "' [" + repo_name + "-nvidia]='" + repo_name + "-nvidia' [" + repo_name + "-nvidia-open]=" + repo_name + "-nvidia-open)"
 image_desc := "Custom lightweight build of Aurora Linux targeted at power users"
+
+artifact_dir := "./out"
+selinux := env("BUILD_SELINUX", "true")
+bib_image := env("BIB_IMAGE", "quay.io/centos-bootc/bootc-image-builder:latest")
+
+bootc_mount_options := if selinux == "true" { "-v /var/lib/containers:/var/lib/containers:Z -v /etc/containers:/etc/containers:Z -v /sys/fs/selinux:/sys/fs/selinux --security-opt label=type:unconfined_t" } else { "-v /var/lib/containers:/var/lib/containers -v /etc/containers:/etc/containers" }
+
 export SUDOIF := if `id -u` == "0" { "" } else { "sudo" }
 export PODMAN := if path_exists("/usr/bin/podman") == "true" { env("PODMAN", "/usr/bin/podman") } else if path_exists("/usr/bin/docker") == "true" { env("PODMAN", "/usr/bin/docker") } else { env("PODMAN", "exit 1") }
 
@@ -38,7 +45,7 @@ clean:
     fi
 
 [group('Image')]
-build image=repo_name tag="stable":
+build image=repo_name $SOURCE_TAG="stable" $DEST_TAG="stable":
     #!/usr/bin/env bash
     set -euxo pipefail
 
@@ -52,29 +59,48 @@ build image=repo_name tag="stable":
 
     BUILD_ARGS=()
     SOURCE_IMAGE="${TARGET_IMAGE/{{ repo_name }}/aurora-dx}"
-    SOURCE_TAG="{{ tag }}"
+
+    # Determine the Fedora version of upstream
     skopeo inspect "docker://ghcr.io/ublue-os/${SOURCE_IMAGE}:${SOURCE_TAG}" > "/tmp/inspect-{{ image }}.json"
     FEDORA_VERSION="$(jq -r '.Labels["ostree.linux"]' < "/tmp/inspect-{{ image }}.json" | grep -oP 'fc\K[0-9]+')"
-    TARGET_TAG="$SOURCE_TAG-$FEDORA_VERSION.$(date +%Y%m%d)-unopt"
+
+    # Determine if the tag we're trying to build exists already
+    TAG_BASE="${FEDORA_VERSION}.$(date +%Y%m%d)"
+    EXISTING_TAGS="$(skopeo list-tags "docker://ghcr.io/{{ repo_user }}/{{ image }}" | jq -r ".Tags | map(select(startswith(\"${DEST_TAG}-${TAG_BASE}\")))[]")"
+
+    TAGN=1
+    TARGET_TAG="${DEST_TAG}-${TAG_BASE}.${TAGN}"
+
+    while printf '%s\n' "$EXISTING_TAGS" | grep -q "$TARGET_TAG"; do
+        TAGN=$((TAGN + 1))
+        TARGET_TAG="${DEST_TAG}-${TAG_BASE}.${TAGN}"
+    done
+
+    IMAGE_VERSION="${TAG_BASE}.${TAGN}"
+    TARGET_TAG="${TARGET_TAG}-unopt"
 
     BUILD_ARGS+=("--file" "Containerfile")
     BUILD_ARGS+=("--label" "org.opencontainers.image.title={{ image }}")
-    BUILD_ARGS+=("--label" "org.opencontainers.image.version=$TARGET_TAG")
+    BUILD_ARGS+=("--label" "org.opencontainers.image.version=${IMAGE_VERSION}")
     BUILD_ARGS+=("--label" "org.opencontainers.image.description={{ image_desc }}")
     BUILD_ARGS+=("--label" "ostree.linux=$(jq -r '.Labels["ostree.linux"]' < /tmp/inspect-{{ image }}.json)")
     BUILD_ARGS+=("--build-arg" "SOURCE_IMAGE=$SOURCE_IMAGE")
     BUILD_ARGS+=("--build-arg" "SOURCE_TAG=$SOURCE_TAG")
     BUILD_ARGS+=("--build-arg" "TARGET_IMAGE=$TARGET_IMAGE")
+    BUILD_ARGS+=("--build-arg" "TARGET_RELEASE_TYPE=$DEST_TAG")
+    BUILD_ARGS+=("--build-arg" "VERSION=${IMAGE_VERSION}")
     BUILD_ARGS+=("--tag" "localhost/$TARGET_IMAGE:$TARGET_TAG")
 
     if [[ "${PODMAN}" =~ docker && "${TERM}" == "dumb" ]]; then
         BUILD_ARGS+=("--progress" "plain")
+    elif [[ "${PODMAN}" =~ podman && "$UID" -ne 0 ]]; then
+        BUILD_ARGS+=("--security-opt" "label=disable")
     fi
 
     ${PODMAN} pull "ghcr.io/ublue-os/${SOURCE_IMAGE}:${SOURCE_TAG}"
     ${PODMAN} build "${BUILD_ARGS[@]}"
 
-    just rechunk "$TARGET_IMAGE" "$TARGET_TAG" "{{ tag }}"
+    just rechunk "$TARGET_IMAGE" "$TARGET_TAG" "$DEST_TAG"
 
 [private]
 rechunk image=repo_name $tag="stable-unopt" prevTag="stable":
@@ -192,7 +218,7 @@ load-image image=repo_name:
     rm -rf "{{ image }}/"
 
 # Build ISO
-[group('ISO')]
+[group('Boot Media')]
 build-iso image=repo_name tag="stable" ghcr="0" clean="0":
     #!/bin/bash
     set -euxo pipefail
@@ -304,6 +330,82 @@ build-iso image=repo_name tag="stable" ghcr="0" clean="0":
     elif [[ "${UID}" == "0" && -n "${SUDO_USER:-}" ]]; then
         ${SUDOIF} chown -R ${SUDO_UID}:${SUDO_GID} "${PWD}"
     fi
+
+[group("Boot Media")]
+disk-image $image=repo_name $tag="stable" $base_dir=artifact_dir $filesystem="ext4":
+    #!/usr/bin/env bash
+    set -euxo pipefail
+
+    if [[ ! -d "${base_dir}" ]]; then
+        mkdir -p "${base_dir}"
+    fi
+
+    # we need to load the image into rootful podman
+    if ! ${SUDOIF} ${PODMAN} image ls --format '{{{{ .Repository }}:{{{{ .Tag }}' | grep -q "localhost/${image}:${tag}"; then
+        if ! ${PODMAN} image ls --format '{{{{ .Repository }}:{{{{ .Tag }}' | grep -q "localhost/${image}:${tag}"; then
+            just build "$image"
+            just load-image "$image"
+        fi
+
+        ${PODMAN} save "localhost/${image}:${tag}" | ${SUDOIF} ${PODMAN} load
+    fi
+
+    ARGS=(--type qcow2)
+    ARGS+=(--rootfs ext4)
+    ARGS+=(--use-librepo=True)
+
+    ${SUDOIF} ${PODMAN} run -it --rm \
+        --privileged \
+        --pull=newer \
+        --net=host \
+        --security-opt label=type:unconfined_t \
+        -v "${PWD}/image.toml:/config.toml:ro" \
+        -v "${base_dir}:/output" \
+        -v "/var/lib/containers/storage:/var/lib/containers/storage" \
+        "{{ bib_image }}" \
+        "${ARGS[@]}" \
+        "localhost/${image}:${tag}"
+
+    sudo chown -R $USER:$USER "$base_dir"
+
+# Run generated bootable disk image in an ephemeral VM
+[group("Utility")]
+run-vm $image=repo_name $tag="stable" $base_dir=artifact_dir $filesystem="ext4":
+    #!/usr/bin/env bash
+    set -euxo pipefail
+
+    IMAGE_FILE="${base_dir}/qcow2/disk.qcow2"
+
+    if [[ ! -e "$IMAGE_FILE" ]]; then
+        just disk-image "$image" "$tag" "$base_dir" "$filesystem"
+    fi
+
+    # Determine available port to use
+    PORT=8006
+    while grep -q ":${PORT}" <<< $(ss -tunalp); do
+        PORT=$(( PORT + 1 ))
+    done
+    echo "Using port: ${PORT}"
+    echo "Connect via browser: http://localhost:${PORT}"
+
+    # Construct VM run arguments
+    RUN_ARGS=()
+    RUN_ARGS+=(--rm --privileged)
+    RUN_ARGS+=(--pull=newer)
+    RUN_ARGS+=(--publish "127.0.0.1:${PORT}:8006")
+    RUN_ARGS+=(--env "CPU_CORES=4")
+    RUN_ARGS+=(--env "RAM_SIZE=4G")
+    RUN_ARGS+=(--env "DISK_SIZE=64G")
+    RUN_ARGS+=(--env "TPM=Y")
+    RUN_ARGS+=(--env "GPU=Y")
+    RUN_ARGS+=(--device=/dev/kvm)
+
+    RUN_ARGS+=(--volume "${IMAGE_FILE}:/boot.qcow2")
+    RUN_ARGS+=(ghcr.io/qemus/qemu)
+
+    # Run the VM and open the browser to connect
+    (sleep 5 && xdg-open "http://localhost:${PORT}") &
+    ${PODMAN} run "${RUN_ARGS[@]}"
 
 # Verify Container with cosign
 [group('Utility')]
