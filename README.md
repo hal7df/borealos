@@ -34,7 +34,7 @@ Run the following steps, then reboot:
 ```sh
 # Fetch the BorealOS public signing key
 sudo mkdir -p /etc/pki/containers
-sudo curl -Lo /etc/pki/containers/borealos.pub https://raw.githubusercontent.com/hal7df/borealos/refs/heads/main/cosign.pub
+sudo curl -Lo /etc/pki/containers/borealos.pub https://raw.githubusercontent.com/hal7df/borealos/refs/heads/main/conf/usr/lib/pki/containers/borealos.pub
 
 # Add a signature policy for BorealOS (you only need to run the command for the image you plan to rebase to)
 sudo podman image trust -t sigstoreSigned -f /etc/pki/containers/borealos.pub ghcr.io/hal7df/borealos
