@@ -1,5 +1,6 @@
 cosign.key
 build/
+out/
 *.contentmeta.json
 *.manifest.json
 *.changelog.txt

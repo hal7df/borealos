@@ -25,22 +25,28 @@ ARG SOURCE_TAG="stable"
 FROM ghcr.io/ublue-os/${SOURCE_IMAGE}:${SOURCE_TAG}
 
 ARG TARGET_IMAGE="borealos"
-ARG SOURCE_TAG="stable"
+ARG TARGET_RELEASE_TYPE="stable"
+ARG VERSION="dev-build"
 
 ### 3. MODIFICATIONS
 ## make modifications desired in your image and install packages by modifying the build.sh script
 ## the following RUN directive does all the things required to run "build.sh" as recommended.
 
-COPY build-files/ /tmp/build-files/
-COPY just/ /tmp/just/
-COPY packages.json /tmp/packages.json
-COPY flatpaks.txt /tmp/flatpaks.txt
-COPY cosign.pub /tmp/cosign.pub
+# Copy in static files
+COPY conf/ /
 
-RUN mkdir -p /var/lib/alternatives && \
-    /tmp/build-files/build.sh && \
-    ostree container commit
-## NOTES:
-# - /var/lib/alternatives is required to prevent failure with some RPM installs
-# - All RUN commands must end with ostree container commit
-#   see: https://coreos.github.io/rpm-ostree/container/#using-ostree-container-commit
+# Run modifications
+RUN --mount=type=tmpfs,dst=/var/log \
+    --mount=type=bind,src=scripts/,dst=/tmp/scripts/ \
+    --mount=type=bind,src=just/,dst=/tmp/just/ \
+    --mount=type=bind,src=packages.json,dst=/tmp/packages.json \
+    --mount=type=bind,src=flatpaks.txt,dst=/tmp/flatpaks.txt \
+    export SCRIPTS_DIR="/tmp/scripts"; \
+    export JUSTFILES="/tmp/just"; \
+    export FLATPAK_LIST="/tmp/flatpaks.txt"; \
+    "${SCRIPTS_DIR}/build.sh"
+
+# Lint image and apply bootc label
+RUN bootc container lint
+LABEL containers.bootc=1
+

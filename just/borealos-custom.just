@@ -23,7 +23,7 @@ configure-wifi-mac network="" mode="":
         while read -r line; do
             NETWORK_LIST+=("$line")
         done < <(nmcli -t -f name,type conn show | awk 'BEGIN{FS=OFS=":"}/802-11-wireless/{NF--; printf "%s\n", $0}')
-        NETWORK="$(ugum choose --header="Select the WiFi network you would like to configure." "${NETWORK_LIST[@]}")"
+        NETWORK="$(gum choose --header="Select the WiFi network you would like to configure." "${NETWORK_LIST[@]}")"
     else
         # Validate that the user provided a valid network connection
         nmcli conn show "$NETWORK" >/dev/null
@@ -44,7 +44,7 @@ configure-wifi-mac network="" mode="":
         echo "stable: generate a stable MAC address uniquely for this network"
         echo "random: generate a random MAC address every time the device connects to this network"
         echo "===================================================================================="
-        MODE="$(ugum choose permanent preserve stable random)"
+        MODE="$(gum choose permanent preserve stable random)"
     else
         case "$MODE" in
             permanent|preserve|stable|random)

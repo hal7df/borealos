@@ -1,0 +1,8 @@
+docker:
+    ghcr.io/hal7df/borealos:
+        use-sigstore-attachments: true
+    ghcr.io/hal7df/borealos-nvidia:
+        use-sigstore-attachments: true
+    ghcr.io/hal7df/borealos-nvidia-open:
+        use-sigstore-attachments: true
+
