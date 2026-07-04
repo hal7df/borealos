@@ -246,7 +246,7 @@ build-iso image=repo_name tag="stable" ghcr="0" clean="0":
         IMAGE_FULL="$IMAGE_REGISTRY/{{ image }}:{{ tag }}"
 
         # Verify the downloaded container
-        just verify-container "{{ image }}:{{ tag }}" "${IMAGE_REGISTRY}" "https://raw.githubusercontent.com/{{ repo_user }}/{{ repo_name }}/refs/heads/main/cosign.pub"
+        just verify-container "{{ image }}:{{ tag }}" "${IMAGE_REGISTRY}" "https://raw.githubusercontent.com/{{ repo_user }}/{{ repo_name }}/refs/heads/main/conf/usr/lib/pki/containers/borealos.pub"
     else
         IMAGE_REGISTRY="localhost"
         IMAGE_FULL="$IMAGE_REGISTRY/{{ image }}:{{ tag }}"
