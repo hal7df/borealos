@@ -332,7 +332,7 @@ build-iso image=repo_name tag="stable" ghcr="0" clean="0":
     fi
 
 [group("Boot Media")]
-disk-image $image=repo_name $tag="stable" $base_dir=artifact_dir $filesystem="ext4":
+disk-image $image=repo_name $tag="-detect" $base_dir=artifact_dir $filesystem="ext4":
     #!/usr/bin/env bash
     set -euxo pipefail
 
@@ -340,13 +340,26 @@ disk-image $image=repo_name $tag="stable" $base_dir=artifact_dir $filesystem="ex
         mkdir -p "${base_dir}"
     fi
 
-    # we need to load the image into rootful podman
-    if ! ${SUDOIF} ${PODMAN} image ls --format '{{{{ .Repository }}:{{{{ .Tag }}' | grep -q "localhost/${image}:${tag}"; then
-        if ! ${PODMAN} image ls --format '{{{{ .Repository }}:{{{{ .Tag }}' | grep -q "localhost/${image}:${tag}"; then
-            just build "$image"
-            just load-image "$image"
-        fi
+    if [[ "${PODMAN}" =~ podman ]]; then
+        image="localhost/${image}"
+    fi
 
+    if [[ "$tag" == "-detect" ]]; then
+        tag="$(${PODMAN} image ls -f "reference=${image}" --format '{{{{.Tag}}' | head -1)"
+    fi
+
+    # make sure the image actually exists
+    if [[ -z "$tag" ]] || ! ${PODMAN} image ls --format '{{{{.Repository}}:{{{{.Tag}}' | grep -q "${image}:${tag}"; then
+        just build "${image#localhost/}"
+        just load-image "${image#localhost/}"
+
+        if [[ -z "$tag" ]]; then
+            tag="$(${PODMAN} image ls -f "reference=${image}" --format '{{{{.Tag}}' | head -1)"
+        fi
+    fi
+
+    # we need to load the image into rootful podman
+    if [[ "${PODMAN}" =~ podman ]] && ! ${SUDOIF} ${PODMAN} image ls --format '{{{{ .Repository }}:{{{{ .Tag }}' | grep -q "${image}:${tag}"; then
         ${PODMAN} save "localhost/${image}:${tag}" | ${SUDOIF} ${PODMAN} load
     fi
 
@@ -364,7 +377,7 @@ disk-image $image=repo_name $tag="stable" $base_dir=artifact_dir $filesystem="ex
         -v "/var/lib/containers/storage:/var/lib/containers/storage" \
         "{{ bib_image }}" \
         "${ARGS[@]}" \
-        "localhost/${image}:${tag}"
+        "${image}:${tag}"
 
     sudo chown -R $USER:$USER "$base_dir"
 
