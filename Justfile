@@ -141,33 +141,6 @@ rechunk image=repo_name $tag="stable-unopt" prevTag="stable":
     # Remove the unoptimized image
     ${PODMAN} rmi "{{ image }}:${tag}"
 
-[group('Image')]
-load-image image=repo_name:
-    #!/usr/bin/env bash
-    set -euxo pipefail
-
-    LOAD_IMAGE_REF="oci:${PWD}/{{ image }}"
-
-    # Workaround uppercase letters in path (e.g. ~/Documents/...)
-    if printf '%s' "$LOAD_IMAGE_REF" | egrep -o '[A-Z]' >/dev/null; then
-        ln -s "$PWD" "/tmp/{{ image }}_work"
-        LOAD_IMAGE_REF="oci:/tmp/{{ image }}_work/{{ image }}"
-    fi
-
-    LOAD_IMAGE="$(${PODMAN} pull "$LOAD_IMAGE_REF")"
-    LOAD_IMAGE_VERSION="$(${PODMAN} inspect "$LOAD_IMAGE" | jq -r '.[]["Config"]["Labels"]["org.opencontainers.image.version"]')"
-    LOAD_IMAGE_VERSION_SYMBOLIC="$(printf '%s' "$LOAD_IMAGE_VERSION" | sed 's/-[[:digit:]]\+\.[[:digit:]]\+$//')"
-
-    ${PODMAN} untag "${LOAD_IMAGE}"
-    ${PODMAN} tag "${LOAD_IMAGE}" "localhost/{{ image }}:$LOAD_IMAGE_VERSION"
-    ${PODMAN} tag "${LOAD_IMAGE}" "localhost/{{ image }}:$LOAD_IMAGE_VERSION_SYMBOLIC"
-    ${PODMAN} images
-
-    if [[ "$LOAD_IMAGE_REF" == "oci:/tmp/{{ image }}_work/{{ image }}" && -L /tmp/{{ image }}_work ]]; then
-        rm -f /tmp/{{ image }}_work
-    fi
-    rm -rf "{{ image }}/"
-
 # Build ISO
 [group('Boot Media')]
 build-iso image=repo_name tag="stable" ghcr="0" clean="0":
