@@ -82,15 +82,7 @@ build image=repo_name $SOURCE_TAG="stable" $DEST_TAG="stable":
     TARGET_TAG="${TARGET_TAG}-unopt"
 
     BUILD_ARGS+=("--file" "Containerfile")
-    BUILD_ARGS+=("--label" "org.opencontainers.image.title={{ image }}")
-    BUILD_ARGS+=("--label" "org.opencontainers.image.version=${IMAGE_VERSION}")
     BUILD_ARGS+=("--label" "org.opencontainers.image.revision=$(git rev-parse HEAD))")
-    BUILD_ARGS+=("--label" "org.opencontainers.image.description={{ image_desc }}")
-    BUILD_ARGS+=("--label" "org.opencontainers.image.url=https://github.com/hal7df/borealos")
-    BUILD_ARGS+=("--label" "org.opencontainers.image.source=https://raw.githubusercontent.com/hal7df/borealos/refs/heads/main/Containerfile")
-    BUILD_ARGS+=("--label" "org.opencontainers.image.vendor=hal7df")
-    BUILD_ARGS+=("--label" "io.artifacthub.package.maintainers=[{\"name\":\"hal7df\",\"email\":\"hal7df@gmail.com\"}]")
-    BUILD_ARGS+=("--label" "io.artifacthub.package.readme-url=https://raw.githubusercontent.com/hal7df/borealos/refs/heads/main/README.md")
     BUILD_ARGS+=("--label" "ostree.linux=$(jq -r '.Labels["ostree.linux"]' < /tmp/inspect-{{ image }}.json)")
     BUILD_ARGS+=("--build-arg" "SOURCE_IMAGE=$SOURCE_IMAGE")
     BUILD_ARGS+=("--build-arg" "SOURCE_TAG=$SOURCE_TAG")
