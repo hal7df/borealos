@@ -50,3 +50,13 @@ RUN --mount=type=tmpfs,dst=/var/log \
 RUN bootc container lint
 LABEL containers.bootc=1
 
+# Add static metadata
+LABEL org.opencontainers.image.title="${TARGET_IMAGE}"
+LABEL org.opencontainers.image.version="${VERSION}"
+LABEL org.opencontainers.image.description="Custom lightweight build of Aurora Linux targeted at power users"
+LABEL org.opencontainers.image.url="https://github.com/hal7df/borealos"
+LABEL org.opencontainers.image.source="https://raw.githubusercontent.com/hal7df/borealos/refs/heads/main/Containerfile"
+LABEL org.opencontainers.image.vendor="hal7df"
+
+LABEL io.artifacthub.package.maintainers="[{\"name\":\"hal7df\",\"email\":\"hal7df@gmail.com\"}]"
+LABEL io.artifacthub.package.readme-url="https://raw.githubusercontent.com/hal7df/borealos/refs/heads/main/README.md"

@@ -82,15 +82,7 @@ build image=repo_name $SOURCE_TAG="stable" $DEST_TAG="stable":
     TARGET_TAG="${TARGET_TAG}-unopt"
 
     BUILD_ARGS+=("--file" "Containerfile")
-    BUILD_ARGS+=("--label" "org.opencontainers.image.title={{ image }}")
-    BUILD_ARGS+=("--label" "org.opencontainers.image.version=${IMAGE_VERSION}")
     BUILD_ARGS+=("--label" "org.opencontainers.image.revision=$(git rev-parse HEAD))")
-    BUILD_ARGS+=("--label" "org.opencontainers.image.description={{ image_desc }}")
-    BUILD_ARGS+=("--label" "org.opencontainers.image.url=https://github.com/hal7df/borealos")
-    BUILD_ARGS+=("--label" "org.opencontainers.image.source=https://raw.githubusercontent.com/hal7df/borealos/refs/heads/main/Containerfile")
-    BUILD_ARGS+=("--label" "org.opencontainers.image.vendor=hal7df")
-    BUILD_ARGS+=("--label" "io.artifacthub.package.maintainers=[{\"name\":\"hal7df\",\"email\":\"hal7df@gmail.com\"}]")
-    BUILD_ARGS+=("--label" "io.artifacthub.package.readme-url=https://raw.githubusercontent.com/hal7df/borealos/refs/heads/main/README.md")
     BUILD_ARGS+=("--label" "ostree.linux=$(jq -r '.Labels["ostree.linux"]' < /tmp/inspect-{{ image }}.json)")
     BUILD_ARGS+=("--build-arg" "SOURCE_IMAGE=$SOURCE_IMAGE")
     BUILD_ARGS+=("--build-arg" "SOURCE_TAG=$SOURCE_TAG")
@@ -109,6 +101,9 @@ build image=repo_name $SOURCE_TAG="stable" $DEST_TAG="stable":
     ${PODMAN} build "${BUILD_ARGS[@]}"
 
     just rechunk "$TARGET_IMAGE" "$TARGET_TAG" "$DEST_TAG"
+
+    # Add symbolic tag to rechunked image
+    ${PODMAN} image tag "${TARGET_IMAGE}:${TARGET_TAG%-unopt}" "${TARGET_IMAGE}:${DEST_TAG}"
 
 [private]
 rechunk image=repo_name $tag="stable-unopt" prevTag="stable":
@@ -138,8 +133,8 @@ rechunk image=repo_name $tag="stable-unopt" prevTag="stable":
         --label ostree.final-diffid- \
         --tag "{{ image }}:$OUT_TAG" | ${PODMAN} load
 
-    # Remove the unoptimized image
-    ${PODMAN} rmi "{{ image }}:${tag}"
+    # Remove unoptimized image
+    podman image rm "{{ image }}:${tag}"
 
 # Build ISO
 [group('Boot Media')]
@@ -368,8 +363,3 @@ verify-container container="" registry="ghcr.io/ublue-os" $key="":
         echo "Verification of {{ registry }}/{{ container }} failed. Please ensure the container's public key is correct."
         exit 1
     fi
-
-[group('Image')]
-list-tags image=repo_name:
-    #!/usr/bin/env bash
-    podman image ls --filter reference='{{ image }}' --format "{{ '{{.Tag}}' }}"
