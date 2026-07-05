@@ -53,16 +53,12 @@ jobs:
 
       - name: Build and rechunk container image
         shell: bash
-        run: sudo just build ${{ matrix.image }}
-
-      - name: Read image tags
-        id: get_tags
-        if: ${{ github.ref == 'refs/heads/main' }}
-        shell: bash
+        id: build
         run: |
-          tags="$(just list-tags ${{ matrix.image }})"
-          echo "tags=$tags" | tr '[[:space:]]' ' ' >> $GITHUB_OUTPUT
-          echo $GITHUB_OUTPUT
+          just build ${{ matrix.image }}
+          podman image ls --filter 'reference=${{ matrix.image }}'
+          TAGS=($(podman image ls --filter 'reference=${{ matrix.image }}' --format '{{ .Tag }}'))
+          echo "tags=${TAGS[*]}" | tee "$GITHUB_OUTPUT"
 
       - name: Fix registry case issues
         id: registry_case
@@ -86,7 +82,7 @@ jobs:
           attempt_delay: 15000
           with: |
             image: ${{ matrix.image }}
-            tags: ${{ steps.get_tags.outputs.tags }}
+            tags: ${{ steps.build.outputs.tags }}
             registry: ${{ steps.registry_case.outputs.lowercase }}
             username: ${{ env.REGISTRY_USER }}
             password: ${{ env.REGISTRY_PASSWORD }}

@@ -110,6 +110,9 @@ build image=repo_name $SOURCE_TAG="stable" $DEST_TAG="stable":
 
     just rechunk "$TARGET_IMAGE" "$TARGET_TAG" "$DEST_TAG"
 
+    # Add symbolic tag to rechunked image
+    ${PODMAN} image tag "${TARGET_IMAGE}:${TARGET_TAG%-unopt}" "${TARGET_IMAGE}:${DEST_TAG}"
+
 [private]
 rechunk image=repo_name $tag="stable-unopt" prevTag="stable":
     #!/usr/bin/env bash
@@ -138,8 +141,8 @@ rechunk image=repo_name $tag="stable-unopt" prevTag="stable":
         --label ostree.final-diffid- \
         --tag "{{ image }}:$OUT_TAG" | ${PODMAN} load
 
-    # Remove the unoptimized image
-    ${PODMAN} rmi "{{ image }}:${tag}"
+    # Remove unoptimized image
+    podman image rm "{{ image }}:${tag}"
 
 # Build ISO
 [group('Boot Media')]
@@ -368,8 +371,3 @@ verify-container container="" registry="ghcr.io/ublue-os" $key="":
         echo "Verification of {{ registry }}/{{ container }} failed. Please ensure the container's public key is correct."
         exit 1
     fi
-
-[group('Image')]
-list-tags image=repo_name:
-    #!/usr/bin/env bash
-    podman image ls --filter reference='{{ image }}' --format "{{ '{{.Tag}}' }}"
