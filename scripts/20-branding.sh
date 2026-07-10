@@ -44,5 +44,3 @@ sed -i "s;\(https://\)getaurora.dev;\1${IMAGE_GIT_REPO};g" /usr/lib/os-release
 sed -i 's;aurora\(-dx\)*\("\)*$;borealos\2;g' /usr/lib/os-release
 sed -i "s;\(RELEASE_TYPE=\).*\$;\1${TARGET_RELEASE_TYPE};g" /usr/lib/os-release
 sed -i "s;${BASE_IMAGE_VERSION};${VERSION};g" /usr/lib/os-release
-
-cp /usr/lib/os-release /etc/os-release
