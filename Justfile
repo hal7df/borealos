@@ -14,7 +14,7 @@ chunkah := "quay.io/coreos/chunkah@" + chunkah_digest
 bootc_mount_options := if selinux == "true" { "-v /var/lib/containers:/var/lib/containers:Z -v /etc/containers:/etc/containers:Z -v /sys/fs/selinux:/sys/fs/selinux --security-opt label=type:unconfined_t" } else { "-v /var/lib/containers:/var/lib/containers -v /etc/containers:/etc/containers" }
 
 export SUDOIF := if `id -u` == "0" { "" } else { "sudo" }
-export PODMAN := if path_exists("/usr/bin/podman") == "true" { env("PODMAN", "/usr/bin/podman") } else if path_exists("/usr/bin/docker") == "true" { env("PODMAN", "/usr/bin/docker") } else { env("PODMAN", "exit 1") }
+export PODMAN := if `command -v podman >/dev/null && echo "0" || echo "1"` == "0" { `command -v podman` } else { error("podman installation not found") }
 
 [private]
 default:
@@ -91,9 +91,7 @@ build image=repo_name $SOURCE_TAG="stable" $DEST_TAG="stable":
     BUILD_ARGS+=("--build-arg" "VERSION=${IMAGE_VERSION}")
     BUILD_ARGS+=("--tag" "localhost/$TARGET_IMAGE:$TARGET_TAG")
 
-    if [[ "${PODMAN}" =~ docker && "${TERM}" == "dumb" ]]; then
-        BUILD_ARGS+=("--progress" "plain")
-    elif [[ "${PODMAN}" =~ podman && "$UID" -ne 0 ]]; then
+    if [[ "$UID" -ne 0 ]]; then
         BUILD_ARGS+=("--security-opt" "label=disable")
     fi
 
@@ -182,7 +180,7 @@ build-iso image=repo_name tag="stable" ghcr="0" clean="0":
     fi
 
     # Load image into rootful podman
-    if [[ "${UID}" -gt "0" && ! ${PODMAN} =~ docker ]]; then
+    if [[ "${UID}" -gt "0" ]]; then
         if [[ "{{ ghcr }}" == "0" ]]; then
             ${PODMAN} save "$IMAGE_FULL" | ${SUDOIF} ${PODMAN} load
         else
