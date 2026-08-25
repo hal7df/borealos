@@ -116,12 +116,14 @@ rechunk image=repo_name $tag="stable-unopt" prevTag="stable":
 
     # Set metadata for the image
     OUT_TAG="${tag/%-unopt/}"
-    CHUNKAH_CONFIG_STR=$(${PODMAN} inspect "{{ image }}:${tag}")
-    export CHUNKAH_CONFIG_STR
+
+    CHUNKAH_CONFIG_FILE="$(mktemp)"
+    trap 'rm -f $CHUNKAH_CONFIG' EXIT
+    ${PODMAN} inspect "{{ image }}:${tag}" | jq 'map(pick(.Config))' > "$CHUNKAH_CONFIG"
 
     # Rechunk the image
     ${PODMAN} run --rm --mount=type=image,src="{{ image }}:${tag}",target=/chunkah \
-        -e CHUNKAH_CONFIG_STR \
+        -v "${CHUNKAH_CONFIG_FILE}:/chunkah-config.json:ro,Z" \
         "{{ chunkah }}" build \
         --verbose \
         --compressed \
@@ -129,6 +131,7 @@ rechunk image=repo_name $tag="stable-unopt" prevTag="stable":
         --prune /sysroot/ \
         --label ostree.commit- \
         --label ostree.final-diffid- \
+        --config "$CHUNKAH_CONFIG" \
         --tag "{{ image }}:$OUT_TAG" | ${PODMAN} load
 
     # Remove unoptimized image
