@@ -118,8 +118,8 @@ rechunk image=repo_name $tag="stable-unopt" prevTag="stable":
     OUT_TAG="${tag/%-unopt/}"
 
     CHUNKAH_CONFIG_FILE="$(mktemp)"
-    trap 'rm -f $CHUNKAH_CONFIG' EXIT
-    ${PODMAN} inspect "{{ image }}:${tag}" | jq 'map(pick(.Config))' > "$CHUNKAH_CONFIG"
+    trap 'rm -f $CHUNKAH_CONFIG_FILE' EXIT
+    ${PODMAN} inspect "{{ image }}:${tag}" | jq 'map(pick(.Config))' > "$CHUNKAH_CONFIG_FILE"
 
     # Rechunk the image
     ${PODMAN} run --rm --mount=type=image,src="{{ image }}:${tag}",target=/chunkah \
