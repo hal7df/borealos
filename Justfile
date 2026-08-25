@@ -131,7 +131,7 @@ rechunk image=repo_name $tag="stable-unopt" prevTag="stable":
         --prune /sysroot/ \
         --label ostree.commit- \
         --label ostree.final-diffid- \
-        --config "$CHUNKAH_CONFIG" \
+        --config "/chunkah-config.json" \
         --tag "{{ image }}:$OUT_TAG" | ${PODMAN} load
 
     # Remove unoptimized image
