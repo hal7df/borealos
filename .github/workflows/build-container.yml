@@ -77,7 +77,7 @@ jobs:
           REGISTRY_USER: ${{ github.actor }}
           REGISTRY_PASSWORD: ${{ github.token }}
         with:
-          action: redhat-actions/push-to-registry@v2
+          action: redhat-actions/push-to-registry@v3
           attempt_limit: 3
           attempt_delay: 15000
           with: |
