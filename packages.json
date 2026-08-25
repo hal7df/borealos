@@ -30,8 +30,7 @@
             "python3-s3transfer",
             "python3-ramalama",
             "solaar",
-            "Sunshine",
-            "tailscale"
+            "Sunshine"
         ]
     }
 }

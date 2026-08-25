@@ -80,7 +80,6 @@ flatpak, brew, or manually installing them to ~/.local/bin/.
   Flatpak if needed.
 - Thunderbird: space concerns
 - Podman Desktop: space concerns
-- Tailscale/KTailctl: I currently have no use for tailscale.
 - Flatseal: KDE has its own Flatpak permissions manager, available in System
   Settings under Security & Privacy > Application Permissions > Flatpak Permissions.
 - Mission Center: Removed in favor of KDE's System Monitor application.
