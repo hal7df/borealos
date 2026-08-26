@@ -70,7 +70,7 @@ jobs:
           set -euxo pipefail
 
           for TAG in ${TAGS}; do
-            podman push --digestfile=/tmp/digestfile "${{ matrix.image }}:${TAG}" "${{ env.REGISTRY }}/${{ matrix.image }}:${TAG}"
+            podman push --digestfile=/tmp/digestfile "${{ matrix.image }}:${TAG}" "${{ env.IMAGE_REGISTRY }}/${{ matrix.image }}:${TAG}"
           done
 
           digest="$(cat /tmp/digestfile)"
@@ -90,7 +90,7 @@ jobs:
           COSIGN_PRIVATE_KEY: ${{ secrets.SIGNING_SECRET }}
         run: |
           cosign sign -y --key env://COSIGN_PRIVATE_KEY --new-bundle-format=false \
-            --use-signing-config=false ${{ env.REGISTRY }}/${{ matrix.image }}@${DIGEST}
+            --use-signing-config=false ${{ env.IMAGE_REGISTRY }}/${{ matrix.image }}@${DIGEST}
 
   check:
     name: Check all images built successfully
