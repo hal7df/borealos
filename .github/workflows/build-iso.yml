@@ -50,37 +50,31 @@ jobs:
         image: ${{ fromJson (inputs.images) }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Maximize build space
+        uses: ublue-os/remove-unwanted-software@695eb75bc387dbcd9685a8e72d23439d8686cba6 #v10
 
       - name: Install Just
-        shell: bash
-        run: |
-          set -euxo pipefail
-          JUST_VERSION=$(curl -L https://api.github.com/repos/casey/just/releases/latest | jq -r '.tag_name')
-          curl -sSLO https://github.com/casey/just/releases/download/${JUST_VERSION}/just-${JUST_VERSION}-x86_64-unknown-linux-musl.tar.gz
-          tar xzvf just-${JUST_VERSION}-x86_64-unknown-linux-musl.tar.gz -C /tmp just
-          sudo mv /tmp/just /usr/local/bin/just
-          rm -f just-${JUST_VERSION}-x86_64-unknown-linux-musl.tar.gz
+        uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3 #v4.0.0
 
       - name: Lint Justfile
         shell: bash
         run: just lint
 
-      - name: Maximize build space
-        uses: ublue-os/remove-unwanted-software@v9
-
       - name: Build ISO
         id: iso
         shell: bash
         run: |
-          sudo just build-iso ${{ matrix.image }} ${{ inputs.tag }} 1 1
+          JUST="$(command -v just)"
+          sudo --preserve-env=PATH "${JUST}" build-iso ${{ matrix.image }} ${{ inputs.tag }} 1 1
           ls -l build/output/${{ matrix.image }}-${{ inputs.tag }}.iso
           awk '{printf "sha256=%s\n", $1}' build/output/${{ matrix.image }}-${{ inputs.tag }}.iso.sha256 >> $GITHUB_OUTPUT
           echo $GITHUB_OUTPUT
 
       - name: Upload ISO as job artifact
         id: upload
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7
         if: ${{ github.ref == 'refs/heads/main' }}
         with:
           name: ${{ matrix.image }}-${{ inputs.tag }}.iso
