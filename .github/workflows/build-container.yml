@@ -50,8 +50,9 @@ jobs:
         run: |
           just build ${{ matrix.image }}
           podman image ls --filter 'reference=${{ matrix.image }}'
-          TAGS=($(podman image ls --filter 'reference=${{ matrix.image }}' --format '{{ .Tag }}'))
-          echo "tags=${TAGS[*]}" | tee "$GITHUB_OUTPUT"
+          NEW_TAG="$(podman image ls --filter 'reference=${{ matrix.image }}' --format '{{ .Tag }}')"
+          ALIAS_TAGS=("$NEW_TAG" "${NEW_TAG%%-*}")
+          printf 'src=%s\naliases=%s\n' "$NEW_TAG" "${ALIAS_TAGS[*]}" | tee "$GITHUB_OUTPUT"
 
       - name: Login to ghcr.io
         uses: docker/login-action@abd2ef45e78c5afb21d64d4ca52ee8550d9572c7 #v4.5.1
@@ -65,12 +66,14 @@ jobs:
         if: ${{ github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
         id: push
         env:
-          TAGS: ${{ steps.build.outputs.tags }}
+          TAGS: ${{ steps.build.outputs.aliases }}
         run: |
           set -euxo pipefail
 
-          for TAG in ${TAGS}; do
-            podman push --digestfile=/tmp/digestfile "${{ matrix.image }}:${TAG}" "${{ env.IMAGE_REGISTRY }}/${{ matrix.image }}:${TAG}"
+          for TAG in $TAGS; do
+            podman push --digestfile=/tmp/digestfile \
+              "${{ matrix.image }}:${{ steps.build.outputs.src }}" \
+              "${{ env.IMAGE_REGISTRY }}/${{ matrix.image }}:${TAG}"
           done
 
           digest="$(cat /tmp/digestfile)"

@@ -100,9 +100,6 @@ build image=repo_name $SOURCE_TAG="stable" $DEST_TAG="stable":
 
     just rechunk "$TARGET_IMAGE" "$TARGET_TAG" "$DEST_TAG"
 
-    # Add symbolic tag to rechunked image
-    ${PODMAN} image tag "${TARGET_IMAGE}:${TARGET_TAG%-unopt}" "${TARGET_IMAGE}:${DEST_TAG}"
-
 [private]
 rechunk image=repo_name $tag="stable-unopt" prevTag="stable":
     #!/usr/bin/env bash
