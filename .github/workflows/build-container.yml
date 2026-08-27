@@ -20,7 +20,7 @@ env:
 jobs:
   build-image:
     name: Build ${{ matrix.image }}:${{ inputs.source_tag }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     continue-on-error: false
     permissions:
       contents: read
