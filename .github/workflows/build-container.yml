@@ -71,9 +71,9 @@ jobs:
           set -euxo pipefail
 
           for TAG in $TAGS; do
-            podman push --digestfile=/tmp/digestfile \
-              "${{ matrix.image }}:${{ steps.build.outputs.src }}" \
-              "${{ env.IMAGE_REGISTRY }}/${{ matrix.image }}:${TAG}"
+            skopeo copy --digestfile=/tmp/digestfile \
+              "container-storage:localhost/${{ matrix.image }}:${{ steps.build.outputs.src }}" \
+              "docker://${{ env.IMAGE_REGISTRY }}/${{ matrix.image }}:${TAG}"
           done
 
           digest="$(cat /tmp/digestfile)"
