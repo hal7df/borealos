@@ -72,7 +72,7 @@ jobs:
 
           for TAG in $TAGS; do
             skopeo copy --digestfile=/tmp/digestfile \
-              "container-storage:localhost/${{ matrix.image }}:${{ steps.build.outputs.src }}" \
+              "containers-storage:localhost/${{ matrix.image }}:${{ steps.build.outputs.src }}" \
               "docker://${{ env.IMAGE_REGISTRY }}/${{ matrix.image }}:${TAG}"
           done
 
