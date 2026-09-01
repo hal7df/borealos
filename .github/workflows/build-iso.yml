@@ -67,9 +67,9 @@ jobs:
         shell: bash
         run: |
           JUST="$(command -v just)"
-          sudo --preserve-env=PATH "${JUST}" build-iso ${{ matrix.image }} ${{ inputs.tag }} 1 1
+          sudo --preserve-env=PATH "${JUST}" build-iso ${{ matrix.image }} "podman-push-debug" 1 1
           ls -l build/output/${{ matrix.image }}-${{ inputs.tag }}.iso
-          awk '{printf "sha256=%s\n", $1}' build/output/${{ matrix.image }}-${{ inputs.tag }}.iso.sha256 >> $GITHUB_OUTPUT
+          awk '{printf "sha256=%s\n", $1}' build/output/${{ matrix.image }}-podman-push-debug.iso.sha256 >> $GITHUB_OUTPUT
           echo $GITHUB_OUTPUT
 
       - name: Upload ISO as job artifact

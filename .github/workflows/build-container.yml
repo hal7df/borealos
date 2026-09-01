@@ -48,22 +48,22 @@ jobs:
         shell: bash
         id: build
         run: |
-          just build ${{ matrix.image }}
+          just build ${{ matrix.image }} stable podman-push-debug
           podman image ls --filter 'reference=${{ matrix.image }}'
           NEW_TAG="$(podman image ls --filter 'reference=${{ matrix.image }}' --format '{{ .Tag }}')"
-          ALIAS_TAGS=("$NEW_TAG" "${NEW_TAG%%-*}")
+          ALIAS_TAGS=("${NEW_TAG%-*}" "$NEW_TAG")
           printf 'src=%s\naliases=%s\n' "$NEW_TAG" "${ALIAS_TAGS[*]}" | tee "$GITHUB_OUTPUT"
 
       - name: Login to ghcr.io
         uses: docker/login-action@abd2ef45e78c5afb21d64d4ca52ee8550d9572c7 #v4.5.1
-        if: ${{ github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+        # if: ${{ github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ github.token }}
 
       - name: Push to ghcr.io
-        if: ${{ github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+        #if: ${{ github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
         id: push
         env:
           TAGS: ${{ steps.build.outputs.aliases }}
@@ -71,9 +71,9 @@ jobs:
           set -euxo pipefail
 
           for TAG in $TAGS; do
-            skopeo copy --digestfile=/tmp/digestfile \
-              "containers-storage:localhost/${{ matrix.image }}:${{ steps.build.outputs.src }}" \
-              "docker://${{ env.IMAGE_REGISTRY }}/${{ matrix.image }}:${TAG}"
+            podman push --digestfile=/tmp/digestfile \
+              "${{ matrix.image }}:${{ steps.build.outputs.src }}" \
+              "${{ env.IMAGE_REGISTRY }}/${{ matrix.image }}:${TAG}"
           done
 
           digest="$(cat /tmp/digestfile)"
@@ -82,10 +82,10 @@ jobs:
 
       - name: Install cosign
         uses: sigstore/cosign-installer@v4.1.2
-        if: ${{ github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+        #if: ${{ github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
 
       - name: Sign container image
-        if: ${{ github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+        #if: ${{ github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
         shell: bash
         env:
           DIGEST: ${{ steps.push.outputs.digest }}
