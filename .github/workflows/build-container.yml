@@ -70,10 +70,15 @@ jobs:
         run: |
           set -euxo pipefail
 
+          SRC_IMAGE="${{ matrix.image }}:${{ steps.build.outputs.src }}"
+          DEST_REPO="${{ env.IMAGE_REGISTRY/${{ matrix.image}}"
+
+          # Perform an initial push to GHCR to work around
+          # github.com/podman-container-tools/container-libs/issues/1129
+          podman push "$SRC_IMAGE" "${DEST_REPO}:$(printf '%s\n' "$TAGS" | awk '{print $1}')"
+
           for TAG in $TAGS; do
-            skopeo copy --digestfile=/tmp/digestfile \
-              "containers-storage:localhost/${{ matrix.image }}:${{ steps.build.outputs.src }}" \
-              "docker://${{ env.IMAGE_REGISTRY }}/${{ matrix.image }}:${TAG}"
+            podman push --digestfile=/tmp/digestfile "$SRC_IMAGE" "${DEST_REPO}:${TAG}"
           done
 
           digest="$(cat /tmp/digestfile)"
