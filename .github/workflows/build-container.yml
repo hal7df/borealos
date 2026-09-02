@@ -71,7 +71,7 @@ jobs:
           set -euxo pipefail
 
           SRC_IMAGE="${{ matrix.image }}:${{ steps.build.outputs.src }}"
-          DEST_REPO="${{ env.IMAGE_REGISTRY/${{ matrix.image}}"
+          DEST_REPO="${{ env.IMAGE_REGISTRY }}/${{ matrix.image}}"
 
           # Perform an initial push to GHCR to work around
           # github.com/podman-container-tools/container-libs/issues/1129
