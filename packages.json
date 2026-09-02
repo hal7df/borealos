@@ -16,6 +16,7 @@
             "docker-model-plugin",
             "incus",
             "incus-agent",
+            "incus-client",
             "lxc",
             "mariadb",
             "mariadb-backup",
