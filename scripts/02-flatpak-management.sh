@@ -12,9 +12,6 @@ if [[ ! -f "$FLATPAK_LIST" ]]; then
     exit 1
 fi
 
-# Remove old script for unattended installation of flatpaks on user sign in
-rm /usr/libexec/ublue-flatpak-manager
-
 # Modify flatpak management to use the borealos flatpak list
 awk -F'/' '{print "flatpak \"" $2 "\""}' "$FLATPAK_LIST" > /usr/share/ublue-os/homebrew/system-flatpaks.Brewfile
 rm -f /usr/share/ublue-os/homebrew/system-dx-flatpaks.Brewfile
